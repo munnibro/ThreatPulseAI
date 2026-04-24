@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#020408;--panel:#060d14;--border:#0a2a3a;--accent:#00e5ff;--accent2:#ff2d55;--accent3:#39ff14;--text:#c8dde8;--muted:#3a6070;--glow:0 0 20px rgba(0,229,255,0.3);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridShift 20s linear infinite;pointer-events:none;}
+  @keyframes gridShift{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
+
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;cursor:pointer;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .nav-back{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;cursor:pointer;}
+  .nav-back:hover{color:var(--accent);}
+
+  .page{max-width:900px;margin:0 auto;padding:2.5rem 2rem;position:relative;z-index:1;}
+  .page-header{margin-bottom:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;text-transform:uppercase;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:#fff;}
+
+  .section{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);}
+  .section-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .section-body{padding:1.5rem;}
+
+  /* Toggle switch */
+  .setting-row{display:flex;align-items:center;justify-content:space-between;padding:.85rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  .setting-row:last-child{border-bottom:none;padding-bottom:0;}
+  .setting-row:first-child{padding-top:0;}
+  .setting-info{flex:1;padding-right:2rem;}
+  .setting-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.92rem;color:#fff;letter-spacing:.04em;margin-bottom:.2rem;}
+  .setting-desc{font-size:.78rem;color:var(--muted);font-weight:300;line-height:1.5;}
+
+  .toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border:1px solid var(--border);border-radius:24px;cursor:pointer;transition:.3s;}
+  .toggle-slider::before{content:'';position:absolute;width:18px;height:18px;left:2px;top:2px;background:var(--muted);border-radius:50%;transition:.3s;}
+  .toggle input:checked + .toggle-slider{background:rgba(0,229,255,.2);border-color:var(--accent);}
+  .toggle input:checked + .toggle-slider::before{transform:translateX(20px);background:var(--accent);box-shadow:var(--glow);}
+
+  /* Slider input */
+  .slider-row{display:flex;flex-direction:column;gap:.6rem;padding:.85rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  .slider-row:last-child{border-bottom:none;}
+  .slider-header{display:flex;align-items:center;justify-content:space-between;}
+  .slider-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.92rem;color:#fff;}
+  .slider-val{font-family:'Share Tech Mono',monospace;font-size:.72rem;color:var(--accent);min-width:40px;text-align:right;}
+  .slider-desc{font-size:.78rem;color:var(--muted);}
+  input[type=range]{width:100%;height:4px;background:var(--border);border-radius:2px;outline:none;cursor:pointer;accent-color:var(--accent);}
+
+  /* Select */
+  .form-select{background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.85rem;padding:.55rem .8rem;outline:none;border-radius:2px;cursor:pointer;min-width:160px;}
+  .form-select:focus{border-color:var(--accent);}
+
+  /* Buttons */
+  .btn-primary{background:var(--accent);color:var(--bg);border:none;padding:.65rem 1.8rem;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;box-shadow:var(--glow);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 35px rgba(0,229,255,.5);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:.65rem 1.8rem;font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-row{display:flex;gap:.8rem;margin-top:1.2rem;}
+
+  .msg{padding:.6rem .9rem;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.08em;border-radius:2px;margin-top:.8rem;display:none;border-left:3px solid;}
+  .msg.success{background:rgba(57,255,20,.1);border-color:var(--accent3);color:var(--accent3);display:block;}
+
+  /* Whitelist table */
+  .whitelist-table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
+  .whitelist-table th{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.15em;text-align:left;padding:.5rem .8rem;border-bottom:1px solid var(--border);}
+  .whitelist-table td{padding:.55rem .8rem;font-family:'Share Tech Mono',monospace;font-size:.68rem;border-bottom:1px solid rgba(255,255,255,.04);}
+  .whitelist-table tr:last-child td{border-bottom:none;}
+  .ip-cell{color:var(--accent);}
+  .label-cell{color:var(--text);}
+  .remove-btn{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:.8rem;transition:text-shadow .2s;padding:0;}
+  .remove-btn:hover{text-shadow:var(--glow2);}
+  .add-row{display:flex;gap:.6rem;margin-top:.8rem;}
+  .add-input{flex:1;background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);font-family:'Share Tech Mono',monospace;font-size:.75rem;padding:.55rem .8rem;outline:none;border-radius:2px;}
+  .add-input:focus{border-color:var(--accent);}
+  .add-btn{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--accent);font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.8rem;padding:.55rem 1rem;cursor:pointer;letter-spacing:.1em;border-radius:2px;transition:all .2s;}
+  .add-btn:hover{background:rgba(0,229,255,.2);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .page>*{animation:fadeUp .4s ease forwards;opacity:0;}
+  .page>*:nth-child(1){animation-delay:.05s}.page>*:nth-child(2){animation-delay:.1s}.page>*:nth-child(3){animation-delay:.15s}.page>*:nth-child(4){animation-delay:.2s}.page>*:nth-child(5){animation-delay:.25s}.page>*:nth-child(6){animation-delay:.3s}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <a class="nav-back" href="/dashboard.html">← Back to Dashboard</a>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-label">Configuration</div>
+    <div class="page-title">Settings</div>
+  </div>
+
+  <!-- ALERT SETTINGS -->
+  <div class="section">
+    <div class="section-head"><span class="section-title">Alert Settings</span></div>
+    <div class="section-body">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Critical Alert Popup</div>
+          <div class="setting-desc">Show a toast notification when a CRITICAL threat is detected on the dashboard.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="criticalPopup" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Sound Alerts</div>
+          <div class="setting-desc">Play a sound when a new threat is detected. Requires browser permission.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="soundAlerts"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Browser Notifications</div>
+          <div class="setting-desc">Send desktop notifications for CRITICAL and HIGH severity threats.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="browserNotifs"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Show Low Severity Threats</div>
+          <div class="setting-desc">Display LOW severity events in the threat feed. Disable to reduce noise.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="showLow" checked><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ML SENSITIVITY -->
+  <div class="section">
+    <div class="section-head"><span class="section-title">AI / ML Sensitivity</span></div>
+    <div class="section-body">
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Anomaly Detection Threshold</span>
+          <span class="slider-val" id="anomalyVal">0.65</span>
+        </div>
+        <div class="slider-desc">Lower = more sensitive (more alerts). Higher = less sensitive (fewer false positives). Recommended: 0.55 – 0.75</div>
+        <input type="range" id="anomalySlider" min="0.1" max="0.99" step="0.01" value="0.65" oninput="updateSlider('anomalyVal', this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">SYN Flood Threshold (External IPs)</span>
+          <span class="slider-val" id="synExtVal">50</span>
+        </div>
+        <div class="slider-desc">Number of SYN packets before an external IP is flagged as a SYN flood. Default: 50</div>
+        <input type="range" id="synExtSlider" min="10" max="500" step="5" value="50" oninput="updateSlider('synExtVal', this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">Port Scan Threshold (External IPs)</span>
+          <span class="slider-val" id="scanExtVal">20</span>
+        </div>
+        <div class="slider-desc">Number of packets in 5 seconds before an external IP is flagged as a port scan. Default: 20</div>
+        <input type="range" id="scanExtSlider" min="5" max="200" step="5" value="20" oninput="updateSlider('scanExtVal', this.value)">
+      </div>
+      <div class="slider-row">
+        <div class="slider-header">
+          <span class="slider-name">ML Training Sample Size</span>
+          <span class="slider-val" id="trainVal">500</span>
+        </div>
+        <div class="slider-desc">Packets collected before the Isolation Forest model trains. More = smarter model, but longer wait. Default: 500</div>
+        <input type="range" id="trainSlider" min="100" max="5000" step="100" value="500" oninput="updateSlider('trainVal', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <!-- CAPTURE SETTINGS -->
+  <div class="section">
+    <div class="section-head"><span class="section-title">Capture Settings</span></div>
+    <div class="section-body">
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Packet Filter</div>
+          <div class="setting-desc">Which packets to capture from your network interface.</div>
+        </div>
+        <select class="form-select" id="packetFilter">
+          <option value="ip">All IP Traffic</option>
+          <option value="tcp">TCP Only</option>
+          <option value="udp">UDP Only</option>
+          <option value="tcp or udp">TCP + UDP</option>
+          <option value="icmp">ICMP Only</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Save Normal Packets to DB</div>
+          <div class="setting-desc">Store normal (non-threat) packets in the database. Disabling this saves disk space — only threats are stored.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="saveNormal" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="setting-name">Max Database Size</div>
+          <div class="setting-desc">Maximum number of packet rows to keep. Older rows are automatically deleted.</div>
+        </div>
+        <select class="form-select" id="maxDbRows">
+          <option value="1000">1,000 rows (~0.5MB)</option>
+          <option value="5000">5,000 rows (~2.5MB)</option>
+          <option value="10000" selected>10,000 rows (~5MB)</option>
+          <option value="50000">50,000 rows (~25MB)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHITELIST -->
+  <div class="section">
+    <div class="section-head"><span class="section-title">IP Whitelist</span></div>
+    <div class="section-body">
+      <div style="font-size:.82rem;color:var(--muted);margin-bottom:1rem;">IPs on this list will never trigger any threat alerts. Add your router, trusted devices, and local servers here.</div>
+      <table class="whitelist-table">
+        <thead><tr><th>IP ADDRESS</th><th>LABEL</th><th>REMOVE</th></tr></thead>
+        <tbody id="whitelistBody"></tbody>
+      </table>
+      <div class="add-row">
+        <input class="add-input" type="text" id="newIp" placeholder="192.168.x.x">
+        <input class="add-input" type="text" id="newLabel" placeholder="Label (e.g. Home Router)">
+        <button class="add-btn" onclick="addWhitelistEntry()">+ ADD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE -->
+  <div class="msg" id="settingsMsg"></div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="saveSettings()">SAVE ALL SETTINGS</button>
+    <button class="btn-ghost" onclick="loadSettings()">RESET TO SAVED</button>
+  </div>
+
+</div>
+
+<script>
+// Default whitelist
+let whitelist = [
+  { ip: '192.168.29.1',   label: 'Home Router' },
+  { ip: '192.168.29.133', label: 'Gateway Device' },
+  { ip: '127.0.0.1',      label: 'Localhost' },
+];
+
+function updateSlider(id, val) {
+  document.getElementById(id).textContent = val;
+}
+
+function renderWhitelist() {
+  const tbody = document.getElementById('whitelistBody');
+  tbody.innerHTML = whitelist.map((e, i) => `
+    <tr>
+      <td class="ip-cell">${e.ip}</td>
+      <td class="label-cell">${e.label}</td>
+      <td><button class="remove-btn" onclick="removeWhitelist(${i})">✕</button></td>
+    </tr>
+  `).join('');
+}
+
+function removeWhitelist(i) {
+  whitelist.splice(i, 1);
+  renderWhitelist();
+}
+
+function addWhitelistEntry() {
+  const ip    = document.getElementById('newIp').value.trim();
+  const label = document.getElementById('newLabel').value.trim();
+  if (!ip) return;
+  whitelist.push({ ip, label: label || 'Custom' });
+  document.getElementById('newIp').value    = '';
+  document.getElementById('newLabel').value = '';
+  renderWhitelist();
+}
+
+function loadSettings() {
+  const saved = JSON.parse(localStorage.getItem('sentinelSettings') || '{}');
+  if (saved.whitelist) whitelist = saved.whitelist;
+  if (saved.anomalyThreshold) {
+    document.getElementById('anomalySlider').value = saved.anomalyThreshold;
+    document.getElementById('anomalyVal').textContent = saved.anomalyThreshold;
+  }
+  if (saved.synExtThreshold) {
+    document.getElementById('synExtSlider').value = saved.synExtThreshold;
+    document.getElementById('synExtVal').textContent = saved.synExtThreshold;
+  }
+  if (saved.scanExtThreshold) {
+    document.getElementById('scanExtSlider').value = saved.scanExtThreshold;
+    document.getElementById('scanExtVal').textContent = saved.scanExtThreshold;
+  }
+  if (saved.trainSize) {
+    document.getElementById('trainSlider').value = saved.trainSize;
+    document.getElementById('trainVal').textContent = saved.trainSize;
+  }
+  if (saved.packetFilter)  document.getElementById('packetFilter').value  = saved.packetFilter;
+  if (saved.maxDbRows)     document.getElementById('maxDbRows').value     = saved.maxDbRows;
+  if (saved.criticalPopup !== undefined) document.getElementById('criticalPopup').checked = saved.criticalPopup;
+  if (saved.soundAlerts   !== undefined) document.getElementById('soundAlerts').checked   = saved.soundAlerts;
+  if (saved.showLow       !== undefined) document.getElementById('showLow').checked       = saved.showLow;
+  if (saved.saveNormal    !== undefined) document.getElementById('saveNormal').checked    = saved.saveNormal;
+  renderWhitelist();
+}
+
+function saveSettings() {
+  const settings = {
+    whitelist:        whitelist,
+    anomalyThreshold: document.getElementById('anomalySlider').value,
+    synExtThreshold:  document.getElementById('synExtSlider').value,
+    scanExtThreshold: document.getElementById('scanExtSlider').value,
+    trainSize:        document.getElementById('trainSlider').value,
+    packetFilter:     document.getElementById('packetFilter').value,
+    maxDbRows:        document.getElementById('maxDbRows').value,
+    criticalPopup:    document.getElementById('criticalPopup').checked,
+    soundAlerts:      document.getElementById('soundAlerts').checked,
+    browserNotifs:    document.getElementById('browserNotifs').checked,
+    showLow:          document.getElementById('showLow').checked,
+    saveNormal:       document.getElementById('saveNormal').checked,
+  };
+  localStorage.setItem('sentinelSettings', JSON.stringify(settings));
+
+  const msg = document.getElementById('settingsMsg');
+  msg.className = 'msg success';
+  msg.textContent = '✓ Settings saved successfully. Restart the server to apply ML changes.';
+  setTimeout(() => msg.className = 'msg', 4000);
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadSettings();
+renderWhitelist();
+
+// Request browser notification permission
+document.getElementById('browserNotifs').addEventListener('change', function() {
+  if (this.checked) Notification.requestPermission();
+});
+</script>
+</body>
+</html>

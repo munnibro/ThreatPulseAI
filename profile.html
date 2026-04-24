@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — My Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#020408;--panel:#060d14;--border:#0a2a3a;--accent:#00e5ff;--accent2:#ff2d55;--accent3:#39ff14;--text:#c8dde8;--muted:#3a6070;--glow:0 0 20px rgba(0,229,255,0.3);--glow2:0 0 20px rgba(255,45,85,0.4);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridShift 20s linear infinite;pointer-events:none;}
+  @keyframes gridShift{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;cursor:pointer;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .nav-back{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;cursor:pointer;}
+  .nav-back:hover{color:var(--accent);}
+
+  /* PAGE */
+  .page{max-width:900px;margin:0 auto;padding:2.5rem 2rem;position:relative;z-index:1;}
+
+  .page-header{margin-bottom:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;text-transform:uppercase;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:#fff;}
+
+  /* PROFILE CARD */
+  .profile-card{background:var(--panel);border:1px solid var(--border);padding:2rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:2rem;position:relative;overflow:hidden;}
+  .profile-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5;}
+
+  .avatar-large{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(0,80,120,.9),rgba(0,40,70,.9));border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1.8rem;color:var(--accent);text-shadow:var(--glow);flex-shrink:0;position:relative;cursor:pointer;transition:all .3s;}
+  .avatar-large:hover{border-color:#fff;box-shadow:0 0 30px rgba(0,229,255,.4);}
+  .avatar-edit{position:absolute;bottom:2px;right:2px;width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.6rem;color:var(--bg);border:2px solid var(--bg);}
+
+  .profile-info h2{font-family:'Rajdhani',sans-serif;font-size:1.4rem;font-weight:700;color:#fff;letter-spacing:.05em;}
+  .profile-info .role-badge{display:inline-flex;align-items:center;gap:.4rem;margin-top:.3rem;background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:var(--accent);font-family:'Share Tech Mono',monospace;font-size:.58rem;letter-spacing:.12em;padding:.2rem .6rem;border-radius:2px;}
+  .profile-info .join-date{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.5rem;letter-spacing:.08em;}
+
+  .profile-stats{margin-left:auto;display:flex;gap:2rem;}
+  .ps-item{text-align:center;}
+  .ps-num{font-family:'Share Tech Mono',monospace;font-size:1.4rem;color:var(--accent);text-shadow:var(--glow);display:block;}
+  .ps-label{font-family:'Rajdhani',sans-serif;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+
+  /* SECTIONS */
+  .section{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .section-head{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.2rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.25);}
+  .section-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .section-body{padding:1.5rem;}
+
+  /* Form inputs */
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+  .form-group{display:flex;flex-direction:column;gap:.4rem;}
+  .form-group.full{grid-column:span 2;}
+  .form-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;}
+  .form-input{background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;padding:.7rem .9rem;outline:none;transition:border-color .2s,box-shadow .2s;border-radius:2px;width:100%;}
+  .form-input:focus{border-color:var(--accent);box-shadow:var(--glow),inset 0 0 15px rgba(0,229,255,.02);}
+  .form-input:disabled{opacity:.5;cursor:not-allowed;}
+  .form-select{background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;padding:.7rem .9rem;outline:none;border-radius:2px;width:100%;cursor:pointer;}
+  .form-select:focus{border-color:var(--accent);}
+
+  /* Buttons */
+  .btn-row{display:flex;gap:.8rem;margin-top:1.2rem;}
+  .btn-primary{background:var(--accent);color:var(--bg);border:none;padding:.65rem 1.8rem;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .2s;box-shadow:var(--glow);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 0 35px rgba(0,229,255,.5);}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+  .btn-danger{background:transparent;color:var(--accent2);border:1px solid rgba(255,45,85,.4);padding:.65rem 1.8rem;font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .btn-danger:hover{background:rgba(255,45,85,.1);border-color:var(--accent2);box-shadow:var(--glow2);}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);padding:.65rem 1.8rem;font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.85rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+
+  /* Password fields */
+  .pw-wrap{position:relative;}
+  .pw-toggle{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;transition:color .2s;}
+  .pw-toggle:hover{color:var(--accent);}
+
+  /* Message */
+  .msg{padding:.6rem .9rem;font-family:'Share Tech Mono',monospace;font-size:.62rem;letter-spacing:.08em;border-radius:2px;margin-top:.8rem;display:none;border-left:3px solid;}
+  .msg.success{background:rgba(57,255,20,.1);border-color:var(--accent3);color:var(--accent3);display:block;}
+  .msg.error{background:rgba(255,45,85,.1);border-color:var(--accent2);color:var(--accent2);display:block;}
+
+  /* Activity log */
+  .activity-list{display:flex;flex-direction:column;gap:.5rem;}
+  .activity-item{display:flex;align-items:center;gap:.8rem;padding:.6rem .8rem;background:rgba(0,0,0,.2);border-left:2px solid var(--border);border-radius:0 2px 2px 0;}
+  .activity-icon{font-size:.9rem;flex-shrink:0;width:24px;text-align:center;}
+  .activity-text{flex:1;font-size:.8rem;color:var(--text);}
+  .activity-time{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);}
+
+  .spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .7s linear infinite;margin-right:.4rem;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .page>*{animation:fadeUp .4s ease forwards;opacity:0;}
+  .page>*:nth-child(1){animation-delay:.05s}
+  .page>*:nth-child(2){animation-delay:.1s}
+  .page>*:nth-child(3){animation-delay:.15s}
+  .page>*:nth-child(4){animation-delay:.2s}
+  .page>*:nth-child(5){animation-delay:.25s}
+
+  @media(max-width:700px){.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:span 1}.profile-stats{display:none}.profile-card{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <a class="logo" href="/dashboard.html">
+    <div class="logo-icon">◈</div>
+    ThreatPulse AI
+  </a>
+  <a class="nav-back" href="/dashboard.html">← Back to Dashboard</a>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <div class="page-label">Account</div>
+    <div class="page-title">My Profile</div>
+  </div>
+
+  <!-- PROFILE CARD -->
+  <div class="profile-card">
+    <div class="avatar-large" id="avatarLarge" onclick="triggerAvatarUpload()">
+      <span id="avatarText">--</span>
+      <div class="avatar-edit">✏</div>
+    </div>
+    <div class="profile-info">
+      <h2 id="profileDisplayName">Loading...</h2>
+      <div class="role-badge">● <span id="profileRole">ANALYST</span></div>
+      <div class="join-date" id="joinDate">Joined: ...</div>
+    </div>
+    <div class="profile-stats">
+      <div class="ps-item">
+        <span class="ps-num" id="statThreats">0</span>
+        <div class="ps-label">Threats Seen</div>
+      </div>
+      <div class="ps-item">
+        <span class="ps-num" id="statPackets">0</span>
+        <div class="ps-label">Packets Monitored</div>
+      </div>
+      <div class="ps-item">
+        <span class="ps-num" id="statSessions">1</span>
+        <div class="ps-label">Active Sessions</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT PROFILE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">Edit Profile Info</span>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input class="form-input" type="text" id="editUsername" placeholder="Username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input class="form-input" type="email" id="editEmail" placeholder="Email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role / Title</label>
+          <select class="form-select" id="editRole">
+            <option value="analyst">SOC Analyst</option>
+            <option value="admin">Administrator</option>
+            <option value="viewer">Viewer</option>
+            <option value="engineer">Security Engineer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Organisation</label>
+          <input class="form-input" type="text" id="editOrg" placeholder="Your company or team">
+        </div>
+      </div>
+      <div class="msg" id="profileMsg"></div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveProfile()" id="saveProfileBtn">SAVE CHANGES</button>
+        <button class="btn-ghost" onclick="loadUser()">RESET</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">Change Password</span>
+    </div>
+    <div class="section-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="currentPw" placeholder="Enter current password" style="padding-right:2.5rem">
+            <button class="pw-toggle" type="button" onclick="togglePw('currentPw',this)">??</button>
+          </div>
+        </div>
+        <div class="form-group" style="grid-column:1">
+          <label class="form-label">New Password</label>
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="newPw" placeholder="Min. 8 characters" style="padding-right:2.5rem">
+            <button class="pw-toggle" type="button" onclick="togglePw('newPw',this)">??</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <div class="pw-wrap">
+            <input class="form-input" type="password" id="confirmPw" placeholder="Repeat new password" style="padding-right:2.5rem">
+            <button class="pw-toggle" type="button" onclick="togglePw('confirmPw',this)">??</button>
+          </div>
+        </div>
+      </div>
+      <div class="msg" id="pwMsg"></div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="changePassword()" id="changePwBtn">UPDATE PASSWORD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title">Recent Activity</span>
+    </div>
+    <div class="section-body">
+      <div class="activity-list" id="activityList">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);text-align:center;padding:1rem;">Loading activity...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="section">
+    <div class="section-head">
+      <span class="section-title" style="color:var(--accent2)">Danger Zone</span>
+    </div>
+    <div class="section-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div style="font-family:'Rajdhani',sans-serif;font-weight:600;color:#fff;margin-bottom:.3rem;">Delete Account</div>
+          <div style="font-size:.8rem;color:var(--muted);">Permanently delete your account and all associated data. This cannot be undone.</div>
+        </div>
+        <button class="btn-danger" onclick="confirmDelete()">DELETE ACCOUNT</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentUser = null;
+
+// ── Load user data ────────────────────────────────────────
+async function loadUser() {
+  try {
+    const res = await fetch('/auth/me');
+    if (res.status === 401) { window.location.href = '/login.html'; return; }
+    const user = await res.json();
+    currentUser = user;
+
+    const initials = user.username.slice(0,2).toUpperCase();
+    const displayName = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+
+    document.getElementById('avatarText').textContent        = initials;
+    document.getElementById('avatarLarge').dataset.initials  = initials;
+    document.getElementById('profileDisplayName').textContent = displayName;
+    document.getElementById('profileRole').textContent        = (user.role || 'analyst').toUpperCase();
+    document.getElementById('joinDate').textContent           = 'Joined: ' + formatDate(user.created_at);
+
+    document.getElementById('editUsername').value = user.username;
+    document.getElementById('editEmail').value    = user.email;
+    document.getElementById('editRole').value     = user.role || 'analyst';
+    document.getElementById('editOrg').value      = user.organisation || '';
+
+  } catch(err) {
+    console.error('Load user error:', err);
+  }
+}
+
+// ── Load stats ────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const r = await fetch('/api/stats');
+    const d = await r.json();
+    document.getElementById('statThreats').textContent = (d.total_threats || 0).toLocaleString();
+    document.getElementById('statPackets').textContent = abbreviate(d.total_packets || 0);
+  } catch(e) {}
+}
+
+// ── Load activity ─────────────────────────────────────────
+async function loadActivity() {
+  try {
+    const r  = await fetch('/api/threats?limit=5');
+    const threats = await r.json();
+    const list = document.getElementById('activityList');
+
+    if (!threats.length) {
+      list.innerHTML = '<div style="font-family:\'Share Tech Mono\',monospace;font-size:.65rem;color:var(--muted);text-align:center;padding:1rem;">No recent activity</div>';
+      return;
+    }
+
+    list.innerHTML = threats.map(t => `
+      <div class="activity-item">
+        <span class="activity-icon">${t.severity === 'CRITICAL' ? '??' : t.severity === 'HIGH' ? '⚠️' : '??'}</span>
+        <span class="activity-text">${t.threat_type} — ${t.src_ip || 'unknown'}</span>
+        <span class="activity-time">${formatDate(t.timestamp)}</span>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+// ── Save profile ──────────────────────────────────────────
+async function saveProfile() {
+  const btn = document.getElementById('saveProfileBtn');
+  const msg = document.getElementById('profileMsg');
+  msg.className = 'msg';
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>SAVING...';
+
+  try {
+    const res = await fetch('/auth/update-profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username:     document.getElementById('editUsername').value.trim(),
+        email:        document.getElementById('editEmail').value.trim(),
+        role:         document.getElementById('editRole').value,
+        organisation: document.getElementById('editOrg').value.trim(),
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      msg.className = 'msg success';
+      msg.textContent = '✓ Profile updated successfully';
+      loadUser();
+    } else {
+      throw new Error(data.detail || 'Update failed');
+    }
+  } catch(err) {
+    msg.className = 'msg error';
+    msg.textContent = '✗ ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'SAVE CHANGES';
+}
+
+// ── Change password ───────────────────────────────────────
+async function changePassword() {
+  const btn = document.getElementById('changePwBtn');
+  const msg = document.getElementById('pwMsg');
+  msg.className = 'msg';
+
+  const current = document.getElementById('currentPw').value;
+  const newPw   = document.getElementById('newPw').value;
+  const confirm = document.getElementById('confirmPw').value;
+
+  if (newPw !== confirm) {
+    msg.className = 'msg error';
+    msg.textContent = '✗ New passwords do not match';
+    return;
+  }
+  if (newPw.length < 8) {
+    msg.className = 'msg error';
+    msg.textContent = '✗ Password must be at least 8 characters';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>UPDATING...';
+
+  try {
+    const res = await fetch('/auth/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ current_password: current, new_password: newPw }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      msg.className = 'msg success';
+      msg.textContent = '✓ Password changed successfully';
+      document.getElementById('currentPw').value = '';
+      document.getElementById('newPw').value     = '';
+      document.getElementById('confirmPw').value = '';
+    } else {
+      throw new Error(data.detail || 'Password change failed');
+    }
+  } catch(err) {
+    msg.className = 'msg error';
+    msg.textContent = '✗ ' + err.message;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'UPDATE PASSWORD';
+}
+
+// ── Delete account ────────────────────────────────────────
+function confirmDelete() {
+  if (confirm('Are you sure? This permanently deletes your account and cannot be undone.')) {
+    fetch('/auth/delete-account', { method: 'DELETE' })
+      .then(() => window.location.href = '/login.html');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function togglePw(id, btn) {
+  const input = document.getElementById(id);
+  input.type  = input.type === 'password' ? 'text' : 'password';
+  btn.textContent = input.type === 'password' ? '??' : '??';
+}
+
+function triggerAvatarUpload() {
+  alert('Avatar upload coming soon! For now your initials are used.');
+}
+
+function formatDate(iso) {
+  if (!iso) return 'N/A';
+  try { return new Date(iso).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }); }
+  catch(e) { return iso.slice(0,10); }
+}
+
+function abbreviate(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadUser();
+loadStats();
+loadActivity();
+</script>
+</body>
+</html>

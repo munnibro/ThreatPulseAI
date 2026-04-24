@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Create Account</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#020408; --panel:#060d14; --border:#0a2a3a;
+    --accent:#00e5ff; --accent2:#ff2d55; --accent3:#39ff14;
+    --text:#c8dde8; --muted:#3a6070;
+    --glow:0 0 20px rgba(0,229,255,0.35);
+    --glow2:0 0 20px rgba(255,45,85,0.4);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:crosshair;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);background-size:50px 50px;animation:gridMove 25s linear infinite;pointer-events:none;}
+  @keyframes gridMove{0%{transform:translateY(0)}100%{transform:translateY(50px)}}
+  .orb{position:fixed;border-radius:50%;pointer-events:none;filter:blur(80px);}
+  .orb-1{width:500px;height:500px;background:radial-gradient(circle,rgba(0,229,255,0.07),transparent 70%);top:-100px;left:-100px;animation:orbFloat 8s ease-in-out infinite;}
+  .orb-2{width:400px;height:400px;background:radial-gradient(circle,rgba(57,255,20,0.05),transparent 70%);bottom:-100px;right:-100px;animation:orbFloat 10s ease-in-out infinite reverse;}
+  @keyframes orbFloat{0%,100%{transform:scale(1) translate(0,0)}50%{transform:scale(1.1) translate(20px,-20px)}}
+
+  .page{display:grid;grid-template-columns:480px 1fr;min-height:100vh;width:100%;position:relative;z-index:1;}
+
+  /* LEFT — form */
+  .left-panel{background:rgba(4,10,18,0.95);display:flex;flex-direction:column;justify-content:center;padding:2.5rem;border-right:1px solid var(--border);position:relative;overflow-y:auto;}
+  .left-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent3),transparent);opacity:0.6;}
+
+  .brand{display:flex;align-items:center;gap:.8rem;margin-bottom:1.8rem;}
+  .brand-icon{width:40px;height:40px;border:2px solid var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--accent);box-shadow:var(--glow);animation:iconPulse 3s ease-in-out infinite;flex-shrink:0;}
+  @keyframes iconPulse{0%,100%{box-shadow:0 0 15px rgba(0,229,255,.3)}50%{box-shadow:0 0 35px rgba(0,229,255,.7)}}
+  .brand-name{font-family:'Share Tech Mono',monospace;font-size:1.3rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);}
+  .brand-sub{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);letter-spacing:.15em;}
+
+  .form-title{font-family:'Rajdhani',sans-serif;font-size:1.7rem;font-weight:700;color:#fff;letter-spacing:.05em;margin-bottom:.3rem;}
+  .form-sub{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);letter-spacing:.15em;margin-bottom:1.5rem;}
+
+  .input-group{margin-bottom:1rem;position:relative;}
+  .input-label{display:block;font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.4rem;}
+  .input-wrap{position:relative;display:flex;align-items:center;}
+  .input-icon{position:absolute;left:.85rem;font-size:.82rem;color:var(--muted);transition:color .2s;z-index:1;pointer-events:none;}
+  input[type="text"],input[type="email"],input[type="password"]{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border);color:var(--text);font-family:'Exo 2',sans-serif;font-size:.88rem;padding:.72rem .85rem .72rem 2.4rem;outline:none;transition:border-color .2s,box-shadow .2s;border-radius:2px;}
+  input:focus{border-color:var(--accent);box-shadow:var(--glow),inset 0 0 20px rgba(0,229,255,.03);}
+  .input-wrap:focus-within .input-icon{color:var(--accent);}
+  .pw-toggle{position:absolute;right:.85rem;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.82rem;padding:0;transition:color .2s;z-index:1;}
+  .pw-toggle:hover{color:var(--accent);}
+
+  /* Password strength */
+  .pw-strength{margin-top:.4rem;display:flex;gap:.3rem;align-items:center;}
+  .pw-bar{flex:1;height:3px;background:var(--border);border-radius:2px;transition:background .3s;}
+  .pw-bar.weak{background:var(--accent2);}
+  .pw-bar.fair{background:#ffd700;}
+  .pw-bar.good{background:var(--accent);}
+  .pw-bar.strong{background:var(--accent3);}
+  .pw-label{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);min-width:40px;text-align:right;}
+
+  /* Terms */
+  .terms-row{display:flex;align-items:flex-start;gap:.6rem;margin-bottom:1.4rem;}
+  .terms-row input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;margin-top:2px;padding:0;flex-shrink:0;}
+  .terms-text{font-family:'Rajdhani',sans-serif;font-size:.8rem;color:var(--muted);line-height:1.5;cursor:pointer;}
+  .terms-text a{color:var(--accent);text-decoration:none;}
+
+  .btn-submit{width:100%;background:var(--accent3);color:var(--bg);border:none;padding:.82rem;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.92rem;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:all .2s;position:relative;overflow:hidden;margin-bottom:1.1rem;}
+  .btn-submit::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .4s;}
+  .btn-submit:hover::before{transform:translateX(100%);}
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 0 40px rgba(57,255,20,0.4);}
+  .btn-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+
+  .divider{display:flex;align-items:center;gap:.8rem;margin-bottom:1.1rem;}
+  .divider-line{flex:1;height:1px;background:var(--border);}
+  .divider-text{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);letter-spacing:.1em;}
+
+  .switch-row{text-align:center;font-family:'Rajdhani',sans-serif;font-size:.83rem;color:var(--muted);}
+  .switch-row a{color:var(--accent);text-decoration:none;font-weight:600;letter-spacing:.05em;transition:text-shadow .2s;}
+  .switch-row a:hover{text-shadow:var(--glow);}
+
+  .msg-box{padding:.65rem .9rem;font-family:'Share Tech Mono',monospace;font-size:.63rem;letter-spacing:.08em;border-radius:2px;margin-bottom:1rem;display:none;border-left:3px solid;}
+  .msg-box.error{background:rgba(255,45,85,.1);border-color:var(--accent2);color:var(--accent2);display:block;}
+  .msg-box.success{background:rgba(57,255,20,.1);border-color:var(--accent3);color:var(--accent3);display:block;}
+
+  .spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .7s linear infinite;margin-right:.4rem;vertical-align:middle;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* RIGHT — features */
+  .right-panel{display:flex;flex-direction:column;justify-content:center;padding:4rem 5rem;position:relative;overflow:hidden;}
+  .right-panel::before{content:'';position:absolute;top:0;left:0;bottom:0;width:1px;background:linear-gradient(to bottom,transparent,var(--accent3),transparent);opacity:.3;}
+
+  .features-title{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:600;color:var(--accent3);letter-spacing:.15em;text-transform:uppercase;margin-bottom:2rem;font-size:.75rem;display:flex;align-items:center;gap:.7rem;}
+  .features-title::before{content:'';width:30px;height:1px;background:var(--accent3);}
+
+  .feature-list{display:flex;flex-direction:column;gap:1.5rem;}
+  .feature-item{display:flex;gap:1.2rem;align-items:flex-start;}
+  .f-icon{width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:rgba(0,229,255,.04);clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);}
+  .f-title{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.95rem;color:#fff;letter-spacing:.05em;margin-bottom:.3rem;}
+  .f-desc{font-size:.8rem;color:var(--muted);line-height:1.6;font-weight:300;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .left-panel>*{animation:fadeUp .5s ease forwards;opacity:0;}
+  .left-panel>*:nth-child(1){animation-delay:.1s}
+  .left-panel>*:nth-child(2){animation-delay:.18s}
+  .left-panel>*:nth-child(3){animation-delay:.26s}
+  .left-panel>*:nth-child(4){animation-delay:.32s}
+  .left-panel>*:nth-child(5){animation-delay:.38s}
+  .left-panel>*:nth-child(6){animation-delay:.44s}
+  .left-panel>*:nth-child(7){animation-delay:.5s}
+  .left-panel>*:nth-child(8){animation-delay:.55s}
+  .left-panel>*:nth-child(9){animation-delay:.6s}
+
+  @media(max-width:860px){
+    .page{grid-template-columns:1fr;}
+    .right-panel{display:none;}
+    .left-panel{padding:2rem 1.5rem;border-right:none;}
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="page">
+
+  <!-- LEFT — SIGNUP FORM -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">◈</div>
+      <div>
+        <div class="brand-name">ThreatPulse AI</div>
+        <div class="brand-sub">AI CYBER THREAT DETECTION</div>
+      </div>
+    </div>
+
+    <div class="form-title">Create Account</div>
+    <div class="form-sub">SET UP YOUR ThreatPulse AI ANALYST PROFILE</div>
+
+    <div class="msg-box" id="msgBox"></div>
+
+    <form id="signupForm" onsubmit="handleSignup(event)">
+
+      <div class="input-group">
+        <label class="input-label" for="username">Username</label>
+        <div class="input-wrap">
+          <span class="input-icon">◉</span>
+          <input type="text" id="username" placeholder="e.g. alexmercer" required minlength="3" autocomplete="username">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="email">Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉</span>
+          <input type="email" id="email" placeholder="analyst@yourorg.io" required autocomplete="email">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">??</span>
+          <input type="password" id="password" placeholder="Min. 8 characters" required minlength="8" oninput="checkStrength(this.value)" autocomplete="new-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('password',this)">??</button>
+        </div>
+        <div class="pw-strength">
+          <div class="pw-bar" id="bar1"></div>
+          <div class="pw-bar" id="bar2"></div>
+          <div class="pw-bar" id="bar3"></div>
+          <div class="pw-bar" id="bar4"></div>
+          <span class="pw-label" id="pwLabel"></span>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label" for="confirm">Confirm Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">??</span>
+          <input type="password" id="confirm" placeholder="Repeat your password" required autocomplete="new-password">
+          <button type="button" class="pw-toggle" onclick="togglePw('confirm',this)">??</button>
+        </div>
+      </div>
+
+      <div class="terms-row">
+        <input type="checkbox" id="terms" required>
+        <label class="terms-text" for="terms">
+          I agree to the <a href="#">Terms of Service</a> and
+          <a href="#">Privacy Policy</a> of ThreatPulse AI
+        </label>
+      </div>
+
+      <button type="submit" class="btn-submit" id="signupBtn">
+        CREATE ThreatPulse AI ACCOUNT
+      </button>
+
+    </form>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">ALREADY HAVE AN ACCOUNT?</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <div class="switch-row">
+      <a href="login.html">← Sign in here</a>
+    </div>
+
+  </div>
+
+  <!-- RIGHT — FEATURES -->
+  <div class="right-panel">
+    <div class="features-title">Why choose ThreatPulse AI</div>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="f-icon">??</div>
+        <div>
+          <div class="f-title">AI-Powered Detection</div>
+          <p class="f-desc">Machine learning models trained on millions of threat patterns detect zero-day attacks with 99.97% accuracy — no signatures needed.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="f-icon">⚡</div>
+        <div>
+          <div class="f-title">Real-Time Monitoring</div>
+          <p class="f-desc">Every packet on your network is captured, analysed, and classified in under 0.3ms — giving you instant visibility into threats.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="f-icon">??️</div>
+        <div>
+          <div class="f-title">Full Packet History</div>
+          <p class="f-desc">Every captured packet and threat is stored in a local SQLite database — searchable, filterable, and always under your control.</p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="f-icon">??️</div>
+        <div>
+          <div class="f-title">Smart Whitelisting</div>
+          <p class="f-desc">Automatically ignores trusted devices like your home router — so you only see real threats, not false positives from your own network.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Check if already logged in ─────────────────────────
+  async function checkAuth() {
+    try {
+      const r = await fetch('/auth/check');
+      const d = await r.json();
+      if (d.authenticated) window.location.href = '/dashboard.html';
+    } catch(e) {}
+  }
+  checkAuth();
+
+  // ── Password strength checker ──────────────────────────
+  function checkStrength(pw) {
+    let score = 0;
+    if (pw.length >= 8)  score++;
+    if (pw.length >= 12) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^A-Za-z0-9]/.test(pw)) score++;
+
+    const bars   = ['bar1','bar2','bar3','bar4'];
+    const labels = ['', 'WEAK', 'FAIR', 'GOOD', 'STRONG'];
+    const cls    = ['', 'weak', 'fair', 'good', 'strong'];
+    const level  = Math.min(Math.ceil(score / 1.25), 4);
+
+    bars.forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = 'pw-bar' + (i < level ? ' ' + cls[level] : '');
+    });
+    document.getElementById('pwLabel').textContent = labels[level];
+    document.getElementById('pwLabel').style.color =
+      level < 2 ? 'var(--accent2)' : level < 3 ? '#ffd700' : level < 4 ? 'var(--accent)' : 'var(--accent3)';
+  }
+
+  // ── Signup handler ────────────────────────────────────
+  async function handleSignup(e) {
+    e.preventDefault();
+    const btn = document.getElementById('signupBtn');
+    const msg = document.getElementById('msgBox');
+    msg.className = 'msg-box';
+
+    const username         = document.getElementById('username').value.trim();
+    const email            = document.getElementById('email').value.trim();
+    const password         = document.getElementById('password').value;
+    const confirm_password = document.getElementById('confirm').value;
+
+    if (password !== confirm_password) {
+      msg.className = 'msg-box error';
+      msg.textContent = '✗ Passwords do not match';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>CREATING ACCOUNT...';
+
+    try {
+      const res = await fetch('/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password, confirm_password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.className = 'msg-box success';
+        msg.textContent = '✓ Account created! Redirecting to dashboard...';
+        setTimeout(() => window.location.href = '/dashboard.html', 1500);
+      } else {
+        throw new Error(data.detail || 'Registration failed');
+      }
+    } catch(err) {
+      msg.className = 'msg-box error';
+      msg.textContent = '✗ ' + (err.message || 'Something went wrong');
+      btn.disabled = false;
+      btn.innerHTML = 'CREATE ThreatPulse AI ACCOUNT';
+    }
+  }
+
+  // ── Password toggle ───────────────────────────────────
+  function togglePw(id, btn) {
+    const input = document.getElementById(id);
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '??' : '??';
+  }
+</script>
+</body>
+</html>
