@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Unresolved Alerts</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#00051a;--panel:#000d2e;--border:#001a52;
+    --accent:#ffffff;--accent2:#4d9fff;--accent3:#7eb8ff;
+    --text:#ffffff;--muted:#3a5a90;
+    --glow:rgba(255,255,255,0.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(77,159,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(77,159,255,0.03) 1px,transparent 1px);background-size:50px 50px;animation:g 20s linear infinite;pointer-events:none;}
+  @keyframes g{0%{transform:translateY(0)}100%{transform:translateY(50px)}}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .back-btn{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);cursor:pointer;transition:color .2s;background:none;border:none;letter-spacing:.1em;}
+  .back-btn:hover{color:var(--accent);}
+  .warn-badge{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.15em;animation:wb 2s steps(1) infinite;}
+  @keyframes wb{0%,75%{opacity:1}76%,100%{opacity:.3}}
+  .page{max-width:1100px;margin:0 auto;padding:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:2rem;}
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .sb{background:var(--panel);padding:1.2rem 1.4rem;position:relative;overflow:hidden;}
+  .sb::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#001a52,#4d9fff,#ffffff,#4d9fff,#001a52);}
+  .sb-val{font-family:'Share Tech Mono',monospace;font-size:2rem;color:var(--accent);text-shadow:var(--glow);display:block;line-height:1;}
+  .sb-label{font-family:'Rajdhani',sans-serif;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;}
+  .panel{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+  .panel-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .alert-list{display:flex;flex-direction:column;gap:.4rem;padding:.6rem;}
+  .ai{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;border-left:3px solid var(--accent);background:rgba(255,145,0,.04);border-radius:0 3px 3px 0;animation:si .3s ease;transition:background .2s;}
+  .ai:hover{background:rgba(255,145,0,.08);}
+  @keyframes si{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .ai-icon{font-size:1.2rem;flex-shrink:0;}
+  .ai-body{flex:1;}
+  .ai-type{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.9rem;color:#fff;}
+  .ai-desc{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.1rem;}
+  .ai-time{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);flex-shrink:0;}
+  .sev-tag{font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:.12rem .4rem;border-radius:2px;flex-shrink:0;}
+  .sev-CRITICAL{background:rgba(255,23,68,.2);color:#ff1744;}
+  .sev-HIGH{background:rgba(255,107,53,.2);color:#ff6b35;}
+  .sev-MEDIUM{background:rgba(255,214,0,.15);color:#ffd600;}
+  .sev-LOW{background:rgba(0,229,255,.12);color:#00e5ff;}
+  .all-clear{text-align:center;padding:3rem;font-family:'Share Tech Mono',monospace;font-size:.7rem;color:#00ff88;border:1px solid rgba(0,255,136,.2);background:rgba(0,255,136,.04);margin:.6rem;}
+  .empty{text-align:center;padding:3rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);}
+
+  /* Gradient theme extras for alerts */
+  .ts-box::before, .sb::before {
+    background: linear-gradient(90deg, #001a52, #4d9fff, #ffffff, #4d9fff, #001a52) !important;
+    opacity: 1 !important;
+  }
+  .panel-header {
+    background: linear-gradient(135deg, rgba(0,5,26,0.9), rgba(0,26,82,0.6)) !important;
+  }
+  .page-label::before {
+    background: linear-gradient(90deg, #4d9fff, #ffffff) !important;
+  }
+  .ts-val {
+    background: linear-gradient(135deg, #ffffff, #4d9fff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sb-val {
+    background: linear-gradient(135deg, #ffffff, #7eb8ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #00051a, #001a52, #4d9fff, #ffffff, #4d9fff, #001a52, #00051a);
+    z-index: 99999;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <div class="warn-badge">⚠ UNRESOLVED ALERTS</div>
+  <button class="back-btn" onclick="history.back()">← BACK</button>
+</nav>
+<div class="page">
+  <div class="page-label">Attention Required</div>
+  <div class="page-title">⚠️ Unresolved Alerts</div>
+  <div class="page-sub" id="lastUpdate">Loading...</div>
+  <div class="summary">
+    <div class="sb"><span class="sb-val" id="s-total">0</span><div class="sb-label">Total Unresolved</div></div>
+    <div class="sb"><span class="sb-val" id="s-crit" style="color:#ff1744;text-shadow:0 0 20px rgba(255,23,68,.5)">0</span><div class="sb-label">Critical Unresolved</div></div>
+    <div class="sb"><span class="sb-val" id="s-high" style="color:#ff6b35">0</span><div class="sb-label">High Unresolved</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">⚠ Alerts Requiring Attention</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted)" id="alertCount">0 alerts</span>
+    </div>
+    <div class="alert-list" id="alertList"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+<script>
+const API=`http://${location.hostname}:${location.port||8000}/api`;
+const WS=`ws://${location.hostname}:${location.port||8000}/ws`;
+async function load(){
+  try{
+    // Use /api/threat-counts for accurate totals from full DB
+    const [cr, tr] = await Promise.all([
+      fetch(API+'/threat-counts'),
+      fetch(API+'/threats')
+    ]);
+    const counts = await cr.json();
+    const all    = await tr.json();
+    const un = all.filter(t=>!t.resolved || t.resolved===0 || t.resolved==="0");
+
+    document.getElementById('s-total').textContent=counts.unresolved_threats||un.length;
+    document.getElementById('s-crit').textContent=un.filter(t=>t.severity==='CRITICAL').length;
+    document.getElementById('s-high').textContent=un.filter(t=>t.severity==='HIGH').length;
+    document.getElementById('alertCount').textContent=(counts.unresolved_threats||un.length)+' alerts';
+    document.getElementById('lastUpdate').textContent='Last updated: '+new Date().toTimeString().slice(0,8)+' — real DB data';
+    const list=document.getElementById('alertList');
+    if(!un.length){list.innerHTML='<div class="all-clear">✅ ALL CLEAR — No unresolved alerts at this time. Your network is secure.</div>';return;}
+    list.innerHTML=un.map(t=>{
+      const time=t.timestamp?new Date(t.timestamp).toTimeString().slice(0,8):'—';
+      const icon=t.severity==='CRITICAL'?'🚨':t.severity==='HIGH'?'⚠️':t.severity==='MEDIUM'?'🔍':'ℹ️';
+      return`<div class="ai"><span class="ai-icon">${icon}</span><div class="ai-body"><div class="ai-type">${t.threat_type||'Unknown Threat'}</div><div class="ai-desc">${t.description||''} ${t.src_ip?'· from '+t.src_ip:''}</div></div><span class="sev-tag sev-${t.severity}">${t.severity}</span><span class="ai-time">${time}</span></div>`;
+    }).join('');
+  }catch(e){document.getElementById('alertList').innerHTML='<div class="empty">Cannot reach API</div>';}
+}
+const ws=new WebSocket(WS);
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='threat'||m.type==='stats')load();};
+load();setInterval(load,5000);
+</script>
+</body>
+</html>

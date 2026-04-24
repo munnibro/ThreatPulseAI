@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Live Threat Feed</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#010a14;--panel:#041624;--border:#0a2a3e;
+    --accent:#ffd700;--accent2:#00ced1;--accent3:#1e90ff;
+    --text:#f0f8ff;--muted:#2a5a70;
+    --glow:rgba(255,215,0,0.3);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,206,209,0.03) 2px,rgba(0,206,209,0.03) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(224,64,251,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(224,64,251,0.025) 1px,transparent 1px);background-size:50px 50px;animation:g 20s linear infinite;pointer-events:none;}
+  @keyframes g{0%{transform:translateY(0)}100%{transform:translateY(50px)}}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .back-btn{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);cursor:pointer;transition:color .2s;background:none;border:none;letter-spacing:.1em;}
+  .back-btn:hover{color:var(--accent);}
+  .live-badge{display:flex;align-items:center;gap:.4rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent);animation:lb 1s ease-in-out infinite;}
+  @keyframes lb{0%,100%{text-shadow:var(--glow)}50%{text-shadow:none}}
+  .page{max-width:1200px;margin:0 auto;padding:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:2rem;}
+  .panel{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+  .panel-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .feed{display:flex;flex-direction:column;gap:.35rem;padding:.6rem;max-height:72vh;overflow-y:auto;}
+  .feed::-webkit-scrollbar{width:3px;}
+  .feed::-webkit-scrollbar-thumb{background:var(--border);}
+  .ti{display:flex;align-items:flex-start;gap:.7rem;padding:.7rem .8rem;border-left:3px solid;border-radius:0 3px 3px 0;background:rgba(0,0,0,.3);animation:si .3s ease;transition:background .2s;}
+  .ti:hover{background:rgba(224,64,251,.04);}
+  @keyframes si{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+  .ti.CRITICAL{border-color:#ff1744;}
+  .ti.HIGH{border-color:#ff6b35;}
+  .ti.MEDIUM{border-color:var(--accent);}
+  .ti.LOW{border-color:#aa00ff;}
+  .tsev{font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:.15rem .45rem;border-radius:2px;font-weight:bold;flex-shrink:0;margin-top:.1rem;}
+  .CRITICAL .tsev{background:rgba(255,23,68,.2);color:#ff1744;}
+  .HIGH .tsev{background:rgba(255,107,53,.2);color:#ff6b35;}
+  .MEDIUM .tsev{background:rgba(224,64,251,.15);color:var(--accent);}
+  .LOW .tsev{background:rgba(170,0,255,.15);color:#aa00ff;}
+  .tbody{flex:1;min-width:0;}
+  .ttype{font-family:'Rajdhani',sans-serif;font-size:.88rem;font-weight:600;color:#fff;}
+  .tdesc{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:.1rem;}
+  .tmeta{display:flex;gap:.8rem;margin-top:.25rem;flex-wrap:wrap;}
+  .tchip{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);}
+  .tchip span{color:var(--text);}
+  .tscore{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--accent);padding:.1rem .35rem;background:rgba(224,64,251,.1);border-radius:2px;}
+  .ttime{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);flex-shrink:0;}
+  .empty{text-align:center;padding:3rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);}
+
+  /* Classic Blue + Turquoise + Gold theme */
+  .ti.CRITICAL { border-color:#ffd700 !important; }
+  .ti.HIGH     { border-color:#00ced1 !important; }
+  .ti.MEDIUM   { border-color:#1e90ff !important; }
+  .ti.LOW      { border-color:#4a7a90 !important; }
+  .CRITICAL .tsev { background:rgba(255,215,0,0.15)  !important; color:#ffd700 !important; }
+  .HIGH .tsev     { background:rgba(0,206,209,0.15)  !important; color:#00ced1 !important; }
+  .MEDIUM .tsev   { background:rgba(30,144,255,0.15) !important; color:#1e90ff !important; }
+  .LOW .tsev      { background:rgba(74,122,144,0.12) !important; color:#4a7a90 !important; }
+  .ti:hover { background:rgba(255,215,0,0.03) !important; }
+  .tscore { background:rgba(255,215,0,0.1) !important; color:#ffd700 !important; }
+  .fc { color:#ffd700 !important; }
+  .panel-title { color:#00ced1 !important; }
+  .page-label { color:#ffd700 !important; }
+  .page-label::before { background:linear-gradient(90deg,#1e90ff,#00ced1,#ffd700) !important; width:40px !important; height:2px !important; }
+  body::after {
+    content:''; position:fixed; top:0; left:0; right:0; height:3px;
+    background:linear-gradient(90deg, #010a14, #1e90ff, #00ced1, #ffd700, #00ced1, #1e90ff, #010a14);
+    z-index:99999; pointer-events:none;
+  }
+  .panel-header { background:linear-gradient(135deg,rgba(1,10,20,0.9),rgba(4,22,36,0.8)) !important; border-bottom:1px solid rgba(0,206,209,0.2) !important; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <div class="live-badge">◈ LIVE TACTICAL FEED</div>
+  <button class="back-btn" onclick="history.back()">← BACK</button>
+</nav>
+<div class="page">
+  <div class="page-label">Real-Time Intelligence</div>
+  <div class="page-title">📡 Live Threat Feed</div>
+  <div class="page-sub" id="lastUpdate">Connecting to WebSocket...</div>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">⚡ All Detected Threats — Real Data</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--accent)" id="fc">0 THREATS</span>
+    </div>
+    <div class="feed" id="feed"><div class="empty">Waiting for threats...</div></div>
+  </div>
+</div>
+<script>
+const WS=`ws://${location.hostname}:${location.port||8000}/ws`;
+const API=`http://${location.hostname}:${location.port||8000}/api`;
+let threats=[],cleared=false;
+function addThreat(t){
+  if(!cleared){document.getElementById('feed').innerHTML='';cleared=true;}
+  threats.unshift(t);
+  document.getElementById('fc').textContent=threats.length+' THREATS';
+  document.getElementById('lastUpdate').textContent='Last updated: '+new Date().toTimeString().slice(0,8);
+  const feed=document.getElementById('feed');
+  const div=document.createElement('div');div.className=`ti ${t.severity}`;
+  const time=t.timestamp?new Date(t.timestamp).toTimeString().slice(0,8):'—';
+  div.innerHTML=`<span class="tsev">${t.severity}</span><div class="tbody"><div class="ttype">${t.threat_type||'Unknown'}</div><div class="tdesc">${t.description||''}</div><div class="tmeta">${t.src_ip?`<div class="tchip">SRC <span>${t.src_ip}</span></div>`:''} ${t.dst_ip?`<div class="tchip">DST <span>${t.dst_ip}</span></div>`:''} ${t.protocol?`<div class="tchip">PROTO <span>${t.protocol}</span></div>`:''} ${t.dst_port?`<div class="tchip">PORT <span>${t.dst_port}</span></div>`:''}</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:.3rem;flex-shrink:0"><span class="ttime">${time}</span>${t.threat_score?`<span class="tscore">${parseFloat(t.threat_score).toFixed(2)}</span>`:''}</div>`;
+  feed.insertBefore(div,feed.firstChild);
+  if(feed.children.length>200)feed.removeChild(feed.lastChild);
+}
+const ws=new WebSocket(WS);
+ws.onopen=()=>{document.getElementById('lastUpdate').textContent='Connected — waiting for threats...';};
+ws.onclose=()=>{document.getElementById('lastUpdate').textContent='Disconnected — reloading...';setTimeout(()=>location.reload(),3000);};
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='threat')addThreat(m.payload);if(m.type==='history'&&m.threats)m.threats.reverse().forEach(addThreat);};
+</script>
+</body>
+</html>

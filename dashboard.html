@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Live Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#020408; --panel:#060d14; --border:#0a2a3a;
+    --accent:#00e5ff; --accent2:#ff2d55; --accent3:#39ff14;
+    --text:#c8dde8; --muted:#3a6070;
+    --glow:0 0 20px rgba(0,229,255,0.3);
+    --glow2:0 0 20px rgba(255,45,85,0.4);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;overflow-x:hidden;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridShift 20s linear infinite;pointer-events:none;}
+  @keyframes gridShift{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;}
+  .logo-icon{width:28px;height:28px;border:2px solid var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;animation:pulseIcon 3s ease-in-out infinite;}
+  .logo-icon::before{content:'◈';color:var(--accent);font-size:.85rem;}
+  @keyframes pulseIcon{0%,100%{box-shadow:0 0 10px rgba(0,229,255,.3)}50%{box-shadow:0 0 25px rgba(0,229,255,.7)}}
+  .nav-right{display:flex;align-items:center;gap:1.5rem;}
+  .ws-status{display:flex;align-items:center;gap:.5rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;letter-spacing:.1em;}
+  .ws-dot{width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s;}
+  .ws-dot.connected{background:var(--accent3);box-shadow:0 0 8px var(--accent3);animation:dotGlow 2s ease-in-out infinite;}
+  .ws-dot.error{background:var(--accent2);}
+  @keyframes dotGlow{0%,100%{box-shadow:0 0 4px var(--accent3)}50%{box-shadow:0 0 14px var(--accent3)}}
+
+  /* USER PROFILE */
+  .user-profile{position:relative;}
+  .profile-btn{display:flex;align-items:center;gap:.6rem;background:transparent;border:1px solid var(--border);border-radius:50px;padding:.28rem .8rem .28rem .28rem;cursor:pointer;transition:all .25s;}
+  .profile-btn:hover,.profile-btn.open{border-color:var(--accent);box-shadow:var(--glow);background:rgba(0,229,255,.03);}
+  .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(0,80,120,.9),rgba(0,40,70,.9));border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.75rem;color:var(--accent);flex-shrink:0;position:relative;}
+  .avatar-ring{position:absolute;inset:-3px;border-radius:50%;border:1px solid rgba(0,229,255,.25);animation:ringPulse 2.5s ease-in-out infinite;}
+  @keyframes ringPulse{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.15);opacity:0}}
+  .avatar-online{position:absolute;bottom:0;right:0;width:8px;height:8px;border-radius:50%;background:var(--accent3);border:1.5px solid var(--bg);box-shadow:0 0 8px var(--accent3);z-index:2;}
+  .profile-meta{display:flex;flex-direction:column;line-height:1.15;}
+  .profile-name{font-family:'Rajdhani',sans-serif;font-weight:600;font-size:.78rem;color:#fff;letter-spacing:.04em;}
+  .profile-role{font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--accent);letter-spacing:.1em;}
+  .chevron{font-size:.52rem;color:var(--muted);margin-left:.1rem;transition:transform .25s;display:inline-block;}
+  .profile-btn.open .chevron{transform:rotate(180deg);}
+  .profile-dropdown{position:absolute;top:calc(100% + 12px);right:0;width:225px;background:rgba(4,10,18,.98);border:1px solid var(--border);border-radius:6px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.75),0 0 30px rgba(0,229,255,.04);opacity:0;transform:translateY(-10px) scale(.96);pointer-events:none;transition:opacity .22s,transform .22s cubic-bezier(.16,1,.3,1);z-index:2000;}
+  .profile-dropdown.show{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+  .profile-dropdown::before{content:'';position:absolute;top:-5px;right:22px;width:10px;height:10px;background:rgba(4,10,18,.98);border-top:1px solid var(--border);border-left:1px solid var(--border);transform:rotate(45deg);}
+  .dd-top-accent{height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.7;}
+  .dd-header{padding:.9rem 1.1rem .8rem;border-bottom:1px solid var(--border);background:rgba(0,229,255,.025);}
+  .dd-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.92rem;color:#fff;letter-spacing:.04em;}
+  .dd-email{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:.1rem;}
+  .dd-badge{display:inline-flex;align-items:center;gap:.3rem;margin-top:.5rem;background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.25);color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:.52rem;letter-spacing:.12em;padding:.15rem .5rem;border-radius:2px;}
+  .dd-badge-dot{width:5px;height:5px;border-radius:50%;background:var(--accent3);animation:dotGlow 1.5s ease-in-out infinite;}
+  .dd-menu{padding:.4rem 0;}
+  .dd-item{display:flex;align-items:center;gap:.7rem;width:100%;padding:.62rem 1.05rem;background:transparent;border:none;text-align:left;cursor:pointer;color:var(--text);font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.86rem;letter-spacing:.05em;transition:background .15s,padding-left .15s,color .15s;position:relative;}
+  .dd-item::after{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--accent);transform:scaleY(0);transform-origin:center;transition:transform .15s;}
+  .dd-item:hover{background:rgba(0,229,255,.05);color:#fff;padding-left:1.3rem;}
+  .dd-item:hover::after{transform:scaleY(1);}
+  .dd-icon{width:28px;height:28px;border:1px solid rgba(255,255,255,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0;transition:all .15s;background:rgba(255,255,255,.02);}
+  .dd-item:hover .dd-icon{border-color:var(--accent);background:rgba(0,229,255,.08);box-shadow:var(--glow);}
+  .dd-label{flex:1;}
+  .dd-pill{font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:.1rem .4rem;border-radius:3px;}
+  .dd-item.signup{color:var(--accent3);}
+  .dd-item.signup::after{background:var(--accent3);}
+  .dd-item.signup:hover{background:rgba(57,255,20,.05);color:var(--accent3);}
+  .dd-item.signup:hover .dd-icon{border-color:var(--accent3);background:rgba(57,255,20,.08);box-shadow:0 0 15px rgba(57,255,20,.25);}
+  .dd-item.signup .dd-pill{background:rgba(57,255,20,.12);color:var(--accent3);border:1px solid rgba(57,255,20,.3);}
+  .dd-item.logout{color:var(--accent2);}
+  .dd-item.logout::after{background:var(--accent2);}
+  .dd-item.logout:hover{background:rgba(255,45,85,.06);color:var(--accent2);}
+  .dd-item.logout:hover .dd-icon{border-color:var(--accent2);background:rgba(255,45,85,.1);box-shadow:var(--glow2);}
+  .dd-sep{height:1px;background:var(--border);margin:.3rem 0;}
+  .dd-footer{padding:.5rem 1.05rem;border-top:1px solid var(--border);background:rgba(0,0,0,.25);font-family:'Share Tech Mono',monospace;font-size:.53rem;color:var(--muted);display:flex;justify-content:space-between;}
+
+  /* MAIN LAYOUT */
+  .main{padding:1.5rem 2rem;max-width:1600px;margin:0 auto;}
+
+  /* STAT CARDS */
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .stat-card{background:var(--panel);padding:1.2rem 1.5rem;position:relative;overflow:hidden;}
+  .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5;}
+  .stat-card.danger::before{background:linear-gradient(90deg,transparent,var(--accent2),transparent);}
+  .stat-card.warn::before{background:linear-gradient(90deg,transparent,#ffd700,transparent);}
+  .stat-card.ok::before{background:linear-gradient(90deg,transparent,var(--accent3),transparent);}
+  .sc-label{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.18em;text-transform:uppercase;margin-bottom:.5rem;}
+  .sc-value{font-family:'Share Tech Mono',monospace;font-size:2rem;color:#fff;line-height:1;text-shadow:0 0 30px rgba(255,255,255,.15);}
+  .sc-value.accent{color:var(--accent);text-shadow:var(--glow);}
+  .sc-value.danger{color:var(--accent2);text-shadow:var(--glow2);}
+  .sc-value.ok{color:var(--accent3);}
+  .sc-sub{font-family:'Rajdhani',sans-serif;font-size:.72rem;color:var(--muted);margin-top:.3rem;font-weight:300;}
+
+  /* PANELS ROW */
+  .panels-row{display:grid;grid-template-columns:1fr 380px;gap:1.5rem;margin-bottom:1.5rem;}
+
+  /* THREAT FEED */
+  .panel{background:var(--panel);border:1px solid var(--border);}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+  .panel-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .panel-badge{font-family:'Share Tech Mono',monospace;font-size:.58rem;padding:.15rem .5rem;background:rgba(255,45,85,.15);border:1px solid rgba(255,45,85,.3);color:var(--accent2);border-radius:2px;}
+  .feed-scroll{height:340px;overflow-y:auto;padding:.5rem;}
+  .feed-scroll::-webkit-scrollbar{width:3px;}
+  .feed-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+
+  .threat-item{display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .7rem;margin-bottom:.4rem;border-left:2px solid;border-radius:0 3px 3px 0;background:rgba(0,0,0,.25);animation:slideIn .3s ease;}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .threat-item.CRITICAL{border-color:var(--accent2);}
+  .threat-item.HIGH{border-color:#ff6b35;}
+  .threat-item.MEDIUM{border-color:#ffd700;}
+  .threat-item.LOW{border-color:var(--accent3);}
+  .t-sev{font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:.15rem .45rem;border-radius:2px;white-space:nowrap;font-weight:bold;flex-shrink:0;margin-top:.1rem;}
+  .CRITICAL .t-sev{background:rgba(255,45,85,.2);color:var(--accent2);}
+  .HIGH .t-sev{background:rgba(255,107,53,.2);color:#ff6b35;}
+  .MEDIUM .t-sev{background:rgba(255,215,0,.15);color:#ffd700;}
+  .LOW .t-sev{background:rgba(57,255,20,.15);color:var(--accent3);}
+  .t-body{flex:1;min-width:0;}
+  .t-type{font-family:'Rajdhani',sans-serif;font-size:.82rem;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .t-desc{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);margin-top:.15rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .t-time{font-family:'Share Tech Mono',monospace;font-size:.55rem;color:var(--muted);flex-shrink:0;margin-top:.1rem;}
+
+  /* SIDEBAR STATS */
+  .sidebar{display:flex;flex-direction:column;gap:1rem;}
+  .mini-panel{background:var(--panel);border:1px solid var(--border);}
+
+  /* Severity breakdown */
+  .sev-bars{padding:1rem;}
+  .sev-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.6rem;}
+  .sev-row:last-child{margin-bottom:0;}
+  .sev-name{font-family:'Share Tech Mono',monospace;font-size:.58rem;width:60px;flex-shrink:0;}
+  .sev-bar-bg{flex:1;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+  .sev-bar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+  .sev-count{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted);width:30px;text-align:right;flex-shrink:0;}
+
+  /* PPS gauge */
+  .pps-display{padding:1rem;text-align:center;}
+  .pps-num{font-family:'Share Tech Mono',monospace;font-size:2.2rem;color:var(--accent);text-shadow:var(--glow);line-height:1;}
+  .pps-label{font-family:'Rajdhani',sans-serif;font-size:.7rem;color:var(--muted);letter-spacing:.1em;margin-top:.3rem;}
+
+  /* BOTTOM ROW */
+  .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;}
+
+  /* Bar chart */
+  .chart-area{padding:1rem;height:140px;display:flex;align-items:flex-end;gap:3px;}
+  .chart-bar{flex:1;background:linear-gradient(to top,rgba(0,229,255,.6),rgba(0,229,255,.15));border-radius:2px 2px 0 0;min-height:2px;transition:height .5s ease,background .3s;}
+  .chart-bar.has-threat{background:linear-gradient(to top,rgba(255,45,85,.7),rgba(255,45,85,.2));}
+
+  /* Terminal */
+  .terminal{background:#000;padding:1rem;font-family:'Share Tech Mono',monospace;font-size:.63rem;height:140px;overflow:hidden;position:relative;}
+  .terminal::after{content:'';position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,#000);}
+  .t-line{line-height:1.75;opacity:1;}
+  .t-line.info{color:var(--accent);}
+  .t-line.warn{color:#ffd700;}
+  .t-line.err{color:var(--accent2);}
+  .t-line.ok{color:var(--accent3);}
+
+  /* TOP IPs */
+  .ip-list{padding:.6rem 1rem;}
+  .ip-row{display:flex;align-items:center;gap:.7rem;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+  .ip-row:last-child{border-bottom:none;}
+  .ip-addr{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent2);flex:1;}
+  .ip-count{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);}
+  .ip-bar{width:60px;height:4px;background:rgba(255,45,85,.15);border-radius:2px;overflow:hidden;}
+  .ip-bar-fill{height:100%;background:var(--accent2);border-radius:2px;transition:width .8s ease;}
+
+  /* Toast */
+  .toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9998;background:rgba(4,10,18,.97);border:1px solid var(--border);border-left:3px solid var(--accent);padding:.7rem 1.2rem;font-family:'Share Tech Mono',monospace;font-size:.68rem;color:var(--accent);letter-spacing:.08em;border-radius:0 4px 4px 0;opacity:0;transform:translateX(20px);transition:all .3s ease;}
+  .toast.show{opacity:1;transform:translateX(0);}
+
+  @media(max-width:1024px){
+    .panels-row{grid-template-columns:1fr;}
+    .bottom-row{grid-template-columns:1fr;}
+    .stat-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:600px){
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    .profile-meta{display:none;}
+    nav{padding:0 1rem;}
+    .main{padding:1rem;}
+  }
+
+  /* Clickable sections */
+  .clickable{cursor:pointer;transition:box-shadow .2s,transform .15s;}
+  .clickable:hover{box-shadow:0 0 0 1px var(--accent),0 4px 24px rgba(0,229,255,.15);transform:translateY(-1px);}
+  .stat-card{position:relative;}
+  .click-hint{position:absolute;bottom:.45rem;right:.7rem;font-family:'Share Tech Mono',monospace;font-size:.5rem;color:var(--muted);letter-spacing:.1em;opacity:0;transition:opacity .2s;pointer-events:none;}
+  .clickable:hover .click-hint{opacity:1;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon"></div>
+    ThreatPulse AI
+  </div>
+  <div class="nav-right">
+    <div class="ws-status">
+      <div class="ws-dot" id="wsDot"></div>
+      <span id="wsLabel" style="color:var(--muted)">CONNECTING...</span>
+    </div>
+
+    <!-- USER PROFILE -->
+    <div class="user-profile" id="userProfile">
+      <button class="profile-btn" id="profileBtn" onclick="toggleDD(event)">
+        <div class="avatar">
+          <span id="avatarInitials">--</span>
+          <div class="avatar-ring"></div>
+          <div class="avatar-online"></div>
+        </div>
+        <div class="profile-meta">
+          <span class="profile-name" id="navUsername">Loading...</span>
+          <span class="profile-role" id="navRole">SOC ANALYST</span>
+        </div>
+        <span class="chevron">▼</span>
+      </button>
+
+      <div class="profile-dropdown" id="profileDD">
+        <div class="dd-top-accent"></div>
+        <div class="dd-header">
+          <div class="dd-name" id="ddName">Loading...</div>
+          <div class="dd-email" id="ddEmail">...</div>
+          <span class="dd-badge"><span class="dd-badge-dot"></span> ACTIVE SESSION</span>
+        </div>
+        <div class="dd-menu">
+          <button class="dd-item signup" onclick="ddAction('signup')">
+            <div class="dd-icon">✦</div>
+            <span class="dd-label">Create Account</span>
+            <span class="dd-pill">NEW</span>
+          </button>
+          <div class="dd-sep"></div>
+          <button class="dd-item" onclick="ddAction('settings')">
+            <div class="dd-icon">⚙</div><span class="dd-label">Settings</span>
+          </button>
+          <button class="dd-item" onclick="ddAction('profile')">
+            <div class="dd-icon">◉</div><span class="dd-label">My Profile</span>
+          </button>
+          <button class="dd-item" onclick="ddAction('notifications')">
+            <div class="dd-icon">◈</div><span class="dd-label">Notifications</span>
+            <span class="dd-pill" id="notifBadge" style="background:rgba(255,45,85,.12);color:var(--accent2);border:1px solid rgba(255,45,85,.3)">0</span>
+          </button>
+          <div class="dd-sep"></div>
+          <button class="dd-item logout" onclick="ddAction('logout')">
+            <div class="dd-icon">⏻</div><span class="dd-label">Sign Out</span>
+          </button>
+        </div>
+        <div class="dd-footer">
+          <span>ThreatPulse AI v1.0.0</span>
+          <span style="color:rgba(57,255,20,.6)">● SECURE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card ok clickable" onclick="openDetail('packets')" style="cursor:pointer">
+      <div class="sc-label">Total Packets Captured</div>
+      <div class="sc-value ok" id="totalPackets">0</div>
+      <div class="sc-sub">Since session started</div>
+      <span class="click-hint">CLICK TO EXPAND →</span>
+    </div>
+    <div class="stat-card danger clickable" onclick="openDetail('threats')" style="cursor:pointer">
+      <div class="sc-label">Total Threats Detected</div>
+      <div class="sc-value danger" id="totalThreats">0</div>
+      <div class="sc-sub">All severity levels</div>
+      <span class="click-hint">CLICK TO EXPAND →</span>
+    </div>
+    <div class="stat-card warn clickable" onclick="openDetail('alerts')" style="cursor:pointer">
+      <div class="sc-label">Unresolved Alerts</div>
+      <div class="sc-value" id="unresolvedThreats" style="color:#ffd700">0</div>
+      <div class="sc-sub">Requiring attention</div>
+      <span class="click-hint">CLICK TO EXPAND →</span>
+    </div>
+    <div class="stat-card clickable" onclick="openDetail('pps')" style="cursor:pointer">
+      <div class="sc-label">Packets / Second</div>
+      <div class="sc-value accent" id="ppsVal">0</div>
+      <div class="sc-sub">Current capture rate</div>
+      <span class="click-hint">CLICK TO EXPAND →</span>
+    </div>
+  </div>
+
+  <!-- PANELS ROW -->
+  <div class="panels-row">
+    <!-- LIVE THREAT FEED -->
+    <div class="panel clickable" onclick="openDetail('feed')" style="cursor:pointer">
+      <div class="panel-header">
+        <span class="panel-title">⚡ Live Threat Feed — Real Data</span>
+        <span class="panel-badge" id="feedBadge">0 THREATS</span>
+      </div>
+      <div class="feed-scroll" id="threatFeed">
+        <div style="text-align:center;padding:2rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);">
+          Waiting for threats...<br><br>
+          Make sure sentinel is running:<br>
+          <span style="color:var(--accent)">python api.py</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <!-- PPS -->
+      <div class="mini-panel clickable" onclick="openDetail('pps')" style="cursor:pointer">
+        <div class="panel-header"><span class="panel-title">Packet Rate</span></div>
+        <div class="pps-display">
+          <div class="pps-num" id="ppsLarge">0</div>
+          <div class="pps-label">PACKETS PER SECOND</div>
+        </div>
+      </div>
+
+      <!-- Severity breakdown -->
+      <div class="mini-panel clickable" onclick="openDetail('severity')" style="cursor:pointer">
+        <div class="panel-header"><span class="panel-title">Severity Breakdown</span></div>
+        <div class="sev-bars">
+          <div class="sev-row">
+            <span class="sev-name" style="color:var(--accent2)">CRITICAL</span>
+            <div class="sev-bar-bg"><div class="sev-bar-fill" id="bar-CRITICAL" style="width:0%;background:var(--accent2)"></div></div>
+            <span class="sev-count" id="cnt-CRITICAL">0</span>
+          </div>
+          <div class="sev-row">
+            <span class="sev-name" style="color:#ff6b35">HIGH</span>
+            <div class="sev-bar-bg"><div class="sev-bar-fill" id="bar-HIGH" style="width:0%;background:#ff6b35"></div></div>
+            <span class="sev-count" id="cnt-HIGH">0</span>
+          </div>
+          <div class="sev-row">
+            <span class="sev-name" style="color:#ffd700">MEDIUM</span>
+            <div class="sev-bar-bg"><div class="sev-bar-fill" id="bar-MEDIUM" style="width:0%;background:#ffd700"></div></div>
+            <span class="sev-count" id="cnt-MEDIUM">0</span>
+          </div>
+          <div class="sev-row">
+            <span class="sev-name" style="color:var(--accent3)">LOW</span>
+            <div class="sev-bar-bg"><div class="sev-bar-fill" id="bar-LOW" style="width:0%;background:var(--accent3)"></div></div>
+            <span class="sev-count" id="cnt-LOW">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW -->
+  <div class="bottom-row">
+    <!-- Traffic chart -->
+    <div class="panel clickable" onclick="openDetail('traffic')" style="cursor:pointer">
+      <div class="panel-header"><span class="panel-title">Traffic Volume (Last 60s)</span></div>
+      <div class="chart-area" id="trafficChart"></div>
+    </div>
+
+    <!-- AI terminal -->
+    <div class="panel clickable" onclick="openDetail('ailog')" style="cursor:pointer">
+      <div class="panel-header"><span class="panel-title">AI Engine Log</span></div>
+      <div class="terminal" id="aiTerminal"></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── WebSocket connection ──────────────────────────────────
+// Auto-detect correct port from browser URL
+const PORT    = window.location.port || "8000";
+const HOST    = window.location.hostname || "127.0.0.1";
+const WS_URL  = `ws://${HOST}:${PORT}/ws`;
+const API_URL = `http://${HOST}:${PORT}/api`;
+
+let ws, reconnectTimer;
+let threatCount = 0;
+let feedCleared = false;
+
+function connectWS() {
+  ws = new WebSocket(WS_URL);
+
+  ws.onopen = () => {
+    setWsStatus("connected", "LIVE");
+    logAI("info", "[WS] Connected to ThreatPulse AI backend");
+    clearInterval(reconnectTimer);
+    fetchStats();
+  };
+
+  ws.onclose = () => {
+    setWsStatus("error", "DISCONNECTED");
+    logAI("err", "[WS] Lost connection — retrying in 3s...");
+    reconnectTimer = setTimeout(connectWS, 3000);
+  };
+
+  ws.onerror = () => {
+    setWsStatus("error", "ERROR");
+  };
+
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === "threat")   handleThreat(msg.payload);
+    if (msg.type === "stats")    handleStats(msg.payload);
+    if (msg.type === "history")  handleHistory(msg);
+  };
+}
+
+// ── WS helpers ────────────────────────────────────────────
+function setWsStatus(state, label) {
+  const dot = document.getElementById("wsDot");
+  const lbl = document.getElementById("wsLabel");
+  dot.className = "ws-dot " + state;
+  lbl.textContent = label;
+  lbl.style.color = state === "connected" ? "var(--accent3)"
+                  : state === "error"     ? "var(--accent2)"
+                  : "var(--muted)";
+}
+
+// ── Handle incoming threat ────────────────────────────────
+function handleThreat(t) {
+  if (!feedCleared) {
+    document.getElementById("threatFeed").innerHTML = "";
+    feedCleared = true;
+  }
+
+  threatCount++;
+  document.getElementById("feedBadge").textContent = threatCount + " THREATS";
+  document.getElementById("notifBadge").textContent = threatCount;
+
+  const feed = document.getElementById("threatFeed");
+  const div = document.createElement("div");
+  div.className = `threat-item ${t.severity}`;
+
+  const time = new Date(t.timestamp).toTimeString().slice(0,8);
+  div.innerHTML = `
+    <span class="t-sev">${t.severity}</span>
+    <div class="t-body">
+      <div class="t-type">${t.threat_type}</div>
+      <div class="t-desc">${t.description}</div>
+    </div>
+    <span class="t-time">${time}</span>
+  `;
+  feed.insertBefore(div, feed.firstChild);
+  if (feed.children.length > 50) feed.removeChild(feed.lastChild);
+
+  // Log to AI terminal
+  const lvl = t.severity === "CRITICAL" || t.severity === "HIGH" ? "err" : "warn";
+  logAI(lvl, `[THREAT] ${t.threat_type} — ${t.src_ip || "?"} score=${(t.threat_score||0).toFixed(2)}`);
+
+  // Flash toast for critical
+  if (t.severity === "CRITICAL") {
+    showToast(`🚨 CRITICAL: ${t.threat_type} from ${t.src_ip || "unknown"}`, "var(--accent2)");
+  }
+}
+
+// ── Handle stats update ───────────────────────────────────
+function handleStats(s) {
+  if (s.total_packets !== undefined)
+    document.getElementById("totalPackets").textContent   = s.total_packets.toLocaleString();
+  if (s.total_threats !== undefined)
+    document.getElementById("totalThreats").textContent   = s.total_threats.toLocaleString();
+  if (s.unresolved_threats !== undefined)
+    document.getElementById("unresolvedThreats").textContent = s.unresolved_threats;
+
+  const pps = s.packets_per_second || 0;
+  document.getElementById("ppsVal").textContent   = pps;
+  document.getElementById("ppsLarge").textContent = pps;
+
+  // Severity bars — handle both flat keys and severity_breakdown object
+  const sb   = s.severity_breakdown || {};
+  const sevs = {
+    CRITICAL: s.CRITICAL || sb.CRITICAL || 0,
+    HIGH:     s.HIGH     || sb.HIGH     || 0,
+    MEDIUM:   s.MEDIUM   || sb.MEDIUM   || 0,
+    LOW:      s.LOW      || sb.LOW      || 0,
+  };
+  const maxSev = Math.max(...Object.values(sevs), 1);
+  for (const [k, v] of Object.entries(sevs)) {
+    const el = document.getElementById("cnt-" + k);
+    const bar = document.getElementById("bar-" + k);
+    if (el) el.textContent = v;
+    if (bar) bar.style.width = ((v / maxSev) * 100) + "%";
+  }
+}
+
+// ── Handle history (sent on connect) ─────────────────────
+function handleHistory(msg) {
+  // Always clear the placeholder message
+  const feed = document.getElementById("threatFeed");
+  feed.innerHTML = "";
+  feedCleared = true;
+
+  if (msg.threats && msg.threats.length > 0) {
+    msg.threats.reverse().forEach(t => handleThreat(t));
+  } else {
+    feed.innerHTML = `<div style="text-align:center;padding:2rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);">
+      No threats detected yet — network is being monitored<br><br>
+      <span style="color:var(--accent3)">● CAPTURE ACTIVE</span>
+    </div>`;
+  }
+  if (msg.stats) {
+    handleStats(msg.stats);
+    document.getElementById("unresolvedThreats").textContent =
+      msg.stats.unresolved_threats || 0;
+  }
+}
+
+// ── Fetch stats from REST API ─────────────────────────────
+async function fetchStats() {
+  try {
+    const [statsRes, threatsRes] = await Promise.all([
+      fetch(API_URL + "/stats"),
+      fetch(API_URL + "/threats?limit=50"),
+    ]);
+    const d = await statsRes.json();
+    const threats = await threatsRes.json();
+
+    // Update all stat counters + severity bars
+    handleStats({
+      ...d,
+      total_packets:      d.total_packets,
+      total_threats:      d.total_threats,
+      unresolved_threats: d.unresolved_threats,
+      // PPS — from top level or latest_stats
+      packets_per_second: d.packets_per_second || d.latest_stats?.packets_per_second || 0,
+      // Flat severity keys for bars
+      CRITICAL: d.CRITICAL || d.severity_breakdown?.CRITICAL || 0,
+      HIGH:     d.HIGH     || d.severity_breakdown?.HIGH     || 0,
+      MEDIUM:   d.MEDIUM   || d.severity_breakdown?.MEDIUM   || 0,
+      LOW:      d.LOW      || d.severity_breakdown?.LOW      || 0,
+    });
+
+    // Populate threat feed from REST if WebSocket hasn't done it yet
+    if (!feedCleared && threats && threats.length > 0) {
+      document.getElementById("threatFeed").innerHTML = "";
+      feedCleared = true;
+      threats.slice().reverse().forEach(t => handleThreat(t));
+    } else if (!feedCleared) {
+      document.getElementById("threatFeed").innerHTML = `<div style="text-align:center;padding:2rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);">
+        No threats detected yet — network is being monitored<br><br>
+        <span style="color:var(--accent3)">● CAPTURE ACTIVE</span>
+      </div>`;
+      feedCleared = true;
+    }
+
+    // Traffic chart
+    renderChart(d.traffic_timeline || []);
+
+    logAI("info", `[API] Stats: ${d.total_packets} packets, ${d.total_threats} threats, PPS: ${d.latest_stats?.packets_per_second || 0}`);
+  } catch (err) {
+    logAI("err", "[API] Cannot reach backend — is api.py running?");
+  }
+}
+
+// ── Traffic chart ─────────────────────────────────────────
+function renderChart(timeline) {
+  const chart = document.getElementById("trafficChart");
+  chart.innerHTML = "";
+  if (!timeline.length) {
+    for (let i = 0; i < 60; i++) {
+      const b = document.createElement("div");
+      b.className = "chart-bar";
+      b.style.height = "2px";
+      chart.appendChild(b);
+    }
+    return;
+  }
+
+  const maxPkts = Math.max(...timeline.map(t => t.packet_count), 1);
+  timeline.slice(-60).forEach(t => {
+    const b = document.createElement("div");
+    b.className = "chart-bar" + (t.threat_count > 0 ? " has-threat" : "");
+    b.style.height = Math.max((t.packet_count / maxPkts) * 110, 2) + "px";
+    b.title = `${t.minute}: ${t.packet_count} pkts, ${t.threat_count} threats`;
+    chart.appendChild(b);
+  });
+}
+
+// ── AI terminal log ───────────────────────────────────────
+function logAI(cls, msg) {
+  const term = document.getElementById("aiTerminal");
+  const div = document.createElement("div");
+  div.className = "t-line " + cls;
+  div.textContent = new Date().toTimeString().slice(0,8) + " " + msg;
+  term.appendChild(div);
+  term.scrollTop = term.scrollHeight;
+  while (term.children.length > 30) term.removeChild(term.firstChild);
+}
+
+// ── Toast ─────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, color = "var(--accent)") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.color = color;
+  t.style.borderLeftColor = color;
+  clearTimeout(toastTimer);
+  t.classList.remove("show");
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    t.classList.add("show");
+    toastTimer = setTimeout(() => t.classList.remove("show"), 3000);
+  }));
+}
+
+// ── Dropdown ──────────────────────────────────────────────
+function toggleDD(e) {
+  e.stopPropagation();
+  document.getElementById("profileBtn").classList.toggle("open");
+  document.getElementById("profileDD").classList.toggle("show");
+}
+
+document.addEventListener("click", () => {
+  document.getElementById("profileBtn").classList.remove("open");
+  document.getElementById("profileDD").classList.remove("show");
+});
+
+document.getElementById("profileDD").addEventListener("click", e => e.stopPropagation());
+
+// ── Load real user from backend ──────────────────────────
+async function loadCurrentUser() {
+  try {
+    const res = await fetch('/auth/me');
+    if (res.status === 401) {
+      window.location.href = '/login.html';
+      return;
+    }
+    const user = await res.json();
+
+    // Update avatar initials
+    const initials = user.username.slice(0,2).toUpperCase();
+    document.getElementById('avatarInitials').textContent = initials;
+
+    // Update nav bar
+    document.getElementById('navUsername').textContent =
+      user.username.charAt(0).toUpperCase() + user.username.slice(1);
+    document.getElementById('navRole').textContent =
+      (user.role || 'analyst').toUpperCase();
+
+    // Update dropdown header
+    document.getElementById('ddName').textContent =
+      user.username.charAt(0).toUpperCase() + user.username.slice(1);
+    document.getElementById('ddEmail').textContent = user.email;
+
+    // Store globally for profile page
+    window._currentUser = user;
+
+  } catch(err) {
+    console.error('Failed to load user:', err);
+  }
+}
+
+// ── Dropdown actions with real navigation ─────────────────
+function ddAction(action) {
+  document.getElementById("profileBtn").classList.remove("open");
+  document.getElementById("profileDD").classList.remove("show");
+
+  if (action === 'logout') {
+    handleLogout();
+    return;
+  }
+
+  const pages = {
+    profile:       '/profile.html',
+    settings:      '/settings.html',
+    notifications: '/notifications.html',
+    signup:        '/create-account.html',
+  };
+
+  if (pages[action]) {
+    window.location.href = pages[action];
+  }
+}
+
+// ── Logout handler ────────────────────────────────────────
+async function handleLogout() {
+  showToast('⏻ Signing out...', 'var(--accent2)');
+  try {
+    await fetch('/auth/logout', { method: 'POST' });
+  } catch(e) {}
+  setTimeout(() => window.location.href = '/login.html', 800);
+}
+
+// ── Init ──────────────────────────────────────────────────
+// ── Section detail navigation
+function openDetail(section) {
+  const pages = {
+    packets:  '/detail-packets.html',
+    threats:  '/detail-threats.html',
+    alerts:   '/detail-alerts.html',
+    pps:      '/detail-pps.html',
+    feed:     '/detail-feed.html',
+    traffic:  '/detail-traffic.html',
+    ailog:    '/detail-ailog.html',
+    severity: '/detail-severity.html',
+  };
+  if (pages[section]) window.location.href = pages[section];
+}
+
+loadCurrentUser();
+connectWS();
+logAI("info", "[ThreatPulse AI] Dashboard loaded — connecting to backend...");
+
+// Refresh stats every 10 seconds as fallback
+setInterval(fetchStats, 10000);
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Packet Rate</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#111111;--panel:#1c1c1c;--border:#333333;
+    --accent:#adff2f;--accent2:#2a2a2a;--accent3:#e8e8e8;
+    --text:#e8e8e8;--muted:#555555;
+    --glow:rgba(173,255,47,0.35);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,176,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,176,255,0.03) 1px,transparent 1px);background-size:40px 40px;animation:g 15s linear infinite;pointer-events:none;}
+  @keyframes g{0%{transform:translateY(0)}100%{transform:translateY(40px)}}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .back-btn{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);cursor:pointer;transition:color .2s;background:none;border:none;letter-spacing:.1em;}
+  .back-btn:hover{color:var(--accent);}
+  .page{max-width:1100px;margin:0 auto;padding:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:2rem;}
+  /* Big gauge */
+  .gauge-wrap{background:var(--panel);border:1px solid var(--border);padding:3rem;text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;}
+  .gauge-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.8;}
+  /* Animated ring around the number */
+  .gauge-ring{position:relative;width:200px;height:200px;margin:0 auto 1.5rem;}
+  .gauge-ring svg{position:absolute;top:0;left:0;width:100%;height:100%;}
+  .gauge-ring-track{fill:none;stroke:rgba(0,176,255,0.1);stroke-width:6;}
+  .gauge-ring-fill{fill:none;stroke:var(--accent);stroke-width:6;stroke-linecap:round;stroke-dasharray:565;stroke-dashoffset:565;transition:stroke-dashoffset 0.5s ease;filter:drop-shadow(0 0 8px rgba(0,176,255,0.6));}
+  .gauge-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .big-pps{font-family:'Share Tech Mono',monospace;font-size:3.5rem;color:var(--accent);text-shadow:var(--glow);line-height:1;animation:numGlow 2s ease-in-out infinite;}
+  @keyframes numGlow{0%,100%{text-shadow:0 0 20px rgba(0,176,255,.4)}50%{text-shadow:0 0 50px rgba(0,176,255,.9)}}
+  .big-label{font-family:'Rajdhani',sans-serif;font-size:.75rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-top:.3rem;}
+  .pps-mini{display:flex;justify-content:center;gap:3rem;margin-top:.5rem;}
+  .pm-item{text-align:center;}
+  .pm-val{font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:#fff;display:block;}
+  .pm-label{font-family:'Rajdhani',sans-serif;font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+  /* Chart */
+  .panel{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+  .panel-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .chart-wrap{padding:1.5rem;height:200px;}
+  canvas{width:100%!important;height:100%!important;}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <button class="back-btn" onclick="history.back()">← BACK</button>
+</nav>
+<div class="page">
+  <div class="page-label">Network Throughput</div>
+  <div class="page-title">⚡ Packet Rate Monitor</div>
+  <div class="page-sub" id="lastUpdate">Connecting to live feed...</div>
+  <div class="gauge-wrap">
+    <div class="gauge-ring">
+      <svg viewBox="0 0 200 200">
+        <circle class="gauge-ring-track" cx="100" cy="100" r="90"/>
+        <circle class="gauge-ring-fill" id="ringFill" cx="100" cy="100" r="90" transform="rotate(-90 100 100)"/>
+      </svg>
+      <div class="gauge-inner">
+        <div class="big-pps" id="bigPps">0</div>
+        <div class="big-label">pkt/s</div>
+      </div>
+    </div>
+    <div class="pps-mini">
+      <div class="pm-item"><span class="pm-val" id="s-avg">0</span><div class="pm-label">60s Average</div></div>
+      <div class="pm-item"><span class="pm-val" id="s-peak" style="color:var(--accent)">0</span><div class="pm-label">Session Peak</div></div>
+      <div class="pm-item"><span class="pm-val" id="s-total">0</span><div class="pm-label">Total Packets</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header"><span class="panel-title">Packet Rate — Last 120 Seconds</span></div>
+    <div class="chart-wrap"><canvas id="chart"></canvas></div>
+  </div>
+</div>
+<script>
+const API=`http://${location.hostname}:${location.port||8000}/api`;
+const WS=`ws://${location.hostname}:${location.port||8000}/ws`;
+const hist=Array(120).fill(0);let peak=0;
+const canvas=document.getElementById('chart'),ctx=canvas.getContext('2d');
+function drawChart(){
+  const W=canvas.offsetWidth,H=canvas.offsetHeight;canvas.width=W;canvas.height=H;ctx.clearRect(0,0,W,H);
+  const max=Math.max(...hist,1),step=W/119;
+  ctx.strokeStyle='rgba(0,176,255,0.07)';ctx.lineWidth=1;
+  for(let i=0;i<5;i++){const y=H-(i/4)*H;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.fillStyle='rgba(0,176,255,0.35)';ctx.font='9px Share Tech Mono';ctx.fillText(Math.round((i/4)*max),4,y-3);}
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(0,176,255,0.25)');g.addColorStop(1,'rgba(0,176,255,0.01)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,H);hist.forEach((v,i)=>ctx.lineTo(i*step,H-(v/max)*H*0.9));ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,176,255,0.95)';ctx.lineWidth=2;ctx.shadowColor='rgba(0,176,255,0.6)';ctx.shadowBlur=8;
+  ctx.beginPath();hist.forEach((v,i)=>{const x=i*step,y=H-(v/max)*H*0.9;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();ctx.shadowBlur=0;
+}
+function updateRing(pps){
+  const maxPps=Math.max(peak,100);const pct=Math.min(pps/maxPps,1);
+  const circumference=565;const offset=circumference-(pct*circumference);
+  document.getElementById('ringFill').style.strokeDashoffset=offset;
+}
+async function loadStats(){
+  try{const r=await fetch(API+'/stats'),d=await r.json();document.getElementById('s-total').textContent=(d.total_packets||0).toLocaleString();document.getElementById('lastUpdate').textContent='Updated: '+new Date().toTimeString().slice(0,8);}catch(e){}
+}
+const ws=new WebSocket(WS);
+ws.onmessage=e=>{
+  const m=JSON.parse(e.data);
+  if(m.type==='stats'){
+    const pps=m.payload.packets_per_second||0;
+    document.getElementById('bigPps').textContent=pps;
+    if(pps>peak){peak=pps;document.getElementById('s-peak').textContent=pps;}
+    if(m.payload.total_packets)document.getElementById('s-total').textContent=(m.payload.total_packets).toLocaleString();
+    hist.push(pps);hist.shift();
+    const avg=Math.round(hist.reduce((a,b)=>a+b,0)/hist.filter(v=>v>0).length||0);
+    document.getElementById('s-avg').textContent=isNaN(avg)?0:avg;
+    updateRing(pps);drawChart();
+    document.getElementById('lastUpdate').textContent='Updated: '+new Date().toTimeString().slice(0,8);
+  }
+};
+loadStats();setInterval(loadStats,5000);window.addEventListener('resize',drawChart);drawChart();
+</script>
+</body>
+</html>

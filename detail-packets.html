@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Packets Captured</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1520;--panel:#241c2e;--border:#3d2d52;
+    --accent:#c9a8e8;--accent2:#a89bb8;--accent3:#e8e0f0;
+    --text:#f0ecf8;--muted:#7a6a8a;
+    --glow:rgba(201,168,232,0.3);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,0.03) 1px,transparent 1px);background-size:50px 50px;animation:g 20s linear infinite;pointer-events:none;}
+  @keyframes g{0%{transform:translateY(0)}100%{transform:translateY(50px)}}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .back-btn{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.12em;cursor:pointer;transition:color .2s;background:none;border:none;}
+  .back-btn:hover{color:var(--accent);}
+  .badge{display:flex;align-items:center;gap:.4rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent);}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:var(--glow);animation:bp 1.5s ease-in-out infinite;}
+  @keyframes bp{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
+  .page{max-width:1300px;margin:0 auto;padding:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:2rem;}
+  .top-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .ts-box{background:var(--panel);padding:1.1rem 1.3rem;position:relative;overflow:hidden;}
+  .ts-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+  .ts-box::after{content:'';position:absolute;bottom:0;left:0;width:0;height:1px;background:var(--accent);animation:scanLine 3s ease-in-out infinite;}
+  @keyframes scanLine{0%{width:0}50%{width:100%}100%{width:0}}
+  .ts-val{font-family:'Share Tech Mono',monospace;font-size:1.6rem;color:var(--accent);text-shadow:var(--glow);display:block;line-height:1;}
+  .ts-label{font-family:'Rajdhani',sans-serif;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;}
+  .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
+  .panel{background:var(--panel);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3);}
+  .panel-title{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;}
+  .chart-wrap{padding:1rem;height:200px;position:relative;}
+  canvas{width:100%!important;height:100%!important;}
+  .donut-wrap{display:flex;align-items:center;justify-content:center;padding:1.5rem;gap:1.5rem;flex-wrap:wrap;}
+  .donut-legend{display:flex;flex-direction:column;gap:.5rem;}
+  .legend-item{display:flex;align-items:center;gap:.5rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--text);}
+  .legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;}
+  th{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);letter-spacing:.15em;text-align:left;padding:.5rem .8rem;border-bottom:1px solid var(--border);}
+  td{padding:.5rem .8rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;border-bottom:1px solid rgba(0,255,136,.04);}
+  tr:hover td{background:rgba(0,255,136,.04);}
+  .proto-badge{padding:.1rem .45rem;border-radius:2px;font-size:.55rem;font-weight:bold;}
+  .proto-TCP{background:rgba(0,255,136,.15);color:var(--accent);}
+  .proto-UDP{background:rgba(0,229,255,.12);color:#00e5ff;}
+  .proto-HTTP{background:rgba(255,214,0,.1);color:#ffd600;}
+  .proto-ICMP{background:rgba(255,107,53,.1);color:#ff6b35;}
+  .proto-OTHER{background:rgba(255,255,255,.05);color:var(--muted);}
+  .empty{text-align:center;padding:2rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);}
+
+  /* Pastel purple neutral extras */
+  .ts-box::before {
+    background: linear-gradient(90deg, transparent, #c9a8e8, transparent) !important;
+  }
+  .panel-header {
+    background: linear-gradient(135deg, rgba(26,21,32,0.9), rgba(61,45,82,0.4)) !important;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3d2d52, #c9a8e8, #e8e0f0, #c9a8e8, #3d2d52);
+    z-index: 99999;
+    pointer-events: none;
+  }
+  .ts-val {
+    color: #e8d5ff !important;
+    text-shadow: 0 0 20px rgba(201,168,232,0.5) !important;
+  }
+  tr:hover td { background: rgba(201,168,232,0.05) !important; }
+  .proto-badge { border-radius: 4px !important; }
+  .proto-TCP  { background: rgba(201,168,232,0.15) !important; color: #c9a8e8 !important; }
+  .proto-UDP  { background: rgba(168,155,184,0.15) !important; color: #a89bb8 !important; }
+  .proto-HTTP { background: rgba(232,224,240,0.1)  !important; color: #e8e0f0 !important; }
+  .proto-ICMP { background: rgba(150,130,170,0.15) !important; color: #9682aa !important; }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <div class="badge"><div class="badge-dot"></div>PACKET MONITOR</div>
+  <button class="back-btn" onclick="history.back()">← BACK TO DASHBOARD</button>
+</nav>
+<div class="page">
+  <div class="page-label">Network Intelligence</div>
+  <div class="page-title">📦 Total Packets Captured</div>
+  <div class="page-sub" id="lastUpdate">Connecting to live feed...</div>
+  <div class="top-stats">
+    <div class="ts-box"><span class="ts-val" id="s-total">0</span><div class="ts-label">Total Packets</div></div>
+    <div class="ts-box"><span class="ts-val" id="s-pps">0</span><div class="ts-label">Packets / Second</div></div>
+    <div class="ts-box"><span class="ts-val" id="s-tcp">—</span><div class="ts-label">TCP Packets</div></div>
+    <div class="ts-box"><span class="ts-val" id="s-udp">—</span><div class="ts-label">UDP Packets</div></div>
+  </div>
+  <div class="charts-row">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Live Packet Rate — Last 60s</span></div>
+      <div class="chart-wrap"><canvas id="rateChart"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Protocol Breakdown</span></div>
+      <div class="donut-wrap">
+        <canvas id="protoChart" width="110" height="110" style="flex-shrink:0"></canvas>
+        <div class="donut-legend" id="protoLegend"></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">Recent Packets — Live Feed</span>
+      <span style="font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted)" id="pktCount">0 packets</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>TIME</th><th>PROTOCOL</th><th>SRC IP</th><th>DST IP</th><th>SRC PORT</th><th>DST PORT</th><th>SIZE</th><th>TTL</th></tr></thead>
+        <tbody id="pktTable"><tr><td colspan="8" class="empty">Loading packets...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+const API=`http://${location.hostname}:${location.port||8000}/api`;
+const WS=`ws://${location.hostname}:${location.port||8000}/ws`;
+const rateHistory=Array(60).fill(0);
+let protoCount={TCP:0,UDP:0,HTTP:0,ICMP:0,OTHER:0};
+const COLORS={TCP:'#00ff88',UDP:'#00e5ff',HTTP:'#ffd600',ICMP:'#ff6b35',OTHER:'#2a5a36'};
+const rc=document.getElementById('rateChart').getContext('2d');
+const pc=document.getElementById('protoChart').getContext('2d');
+function drawRate(){
+  const W=document.getElementById('rateChart').offsetWidth,H=document.getElementById('rateChart').offsetHeight;
+  document.getElementById('rateChart').width=W;document.getElementById('rateChart').height=H;
+  rc.clearRect(0,0,W,H);
+  const max=Math.max(...rateHistory,1),step=W/59;
+  rc.strokeStyle='rgba(0,255,136,0.08)';rc.lineWidth=1;
+  for(let i=0;i<4;i++){const y=H-(i/3)*H;rc.beginPath();rc.moveTo(0,y);rc.lineTo(W,y);rc.stroke();rc.fillStyle='rgba(0,255,136,0.4)';rc.font='9px Share Tech Mono';rc.fillText(Math.round((i/3)*max),4,y-3);}
+  const g=rc.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(0,255,136,0.3)');g.addColorStop(1,'rgba(0,255,136,0.01)');
+  rc.fillStyle=g;rc.beginPath();rc.moveTo(0,H);
+  rateHistory.forEach((v,i)=>rc.lineTo(i*step,H-(v/max)*H*0.9));
+  rc.lineTo(W,H);rc.closePath();rc.fill();
+  rc.strokeStyle='rgba(0,255,136,0.95)';rc.lineWidth=2;rc.shadowColor='rgba(0,255,136,0.5)';rc.shadowBlur=8;
+  rc.beginPath();rateHistory.forEach((v,i)=>{const x=i*step,y=H-(v/max)*H*0.9;i===0?rc.moveTo(x,y):rc.lineTo(x,y);});
+  rc.stroke();rc.shadowBlur=0;
+}
+function drawProto(){
+  const total=Object.values(protoCount).reduce((a,b)=>a+b,0)||1;
+  let angle=-Math.PI/2;pc.clearRect(0,0,110,110);
+  Object.entries(protoCount).forEach(([k,v])=>{const s=(v/total)*Math.PI*2;pc.beginPath();pc.moveTo(55,55);pc.arc(55,55,45,angle,angle+s);pc.closePath();pc.fillStyle=COLORS[k];pc.fill();angle+=s;});
+  pc.beginPath();pc.arc(55,55,27,0,Math.PI*2);pc.fillStyle='#061008';pc.fill();
+  pc.fillStyle='#fff';pc.font='bold 10px Share Tech Mono';pc.textAlign='center';pc.fillText(total.toLocaleString(),55,59);
+  document.getElementById('protoLegend').innerHTML=Object.entries(protoCount).map(([k,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${COLORS[k]}"></div><span style="color:${COLORS[k]}">${k}</span><span style="color:var(--muted);margin-left:.3rem">${Math.round(v/total*100)}%</span></div>`).join('');
+}
+async function loadPackets(){
+  try{
+    const r=await fetch(API+'/packets?limit=100'),pkts=await r.json();
+    document.getElementById('pktCount').textContent=pkts.length+' packets';
+    document.getElementById('lastUpdate').textContent='Last updated: '+new Date().toTimeString().slice(0,8);
+    protoCount={TCP:0,UDP:0,HTTP:0,ICMP:0,OTHER:0};
+    let tcp=0,udp=0;
+    pkts.forEach(p=>{const pr=p.protocol||'OTHER';if(pr==='TCP')tcp++;if(pr==='UDP')udp++;protoCount[['TCP','UDP','HTTP','ICMP'].includes(pr)?pr:'OTHER']++;});
+    document.getElementById('s-tcp').textContent=tcp;document.getElementById('s-udp').textContent=udp;
+    drawProto();
+    const tbody=document.getElementById('pktTable');
+    if(!pkts.length){tbody.innerHTML='<tr><td colspan="8" class="empty">No packets yet</td></tr>';return;}
+    tbody.innerHTML=pkts.slice(0,50).map(p=>{
+      const proto=p.protocol||'OTHER',time=p.timestamp?new Date(p.timestamp).toTimeString().slice(0,8):'—';
+      return`<tr><td style="color:var(--muted)">${time}</td><td><span class="proto-badge proto-${proto}">${proto}</span></td><td style="color:var(--accent)">${p.src_ip||'—'}</td><td style="color:var(--text)">${p.dst_ip||'—'}</td><td style="color:var(--muted)">${p.src_port||'—'}</td><td style="color:var(--muted)">${p.dst_port||'—'}</td><td style="color:#00ff88">${p.packet_size||0}B</td><td style="color:var(--muted)">${p.ttl||'—'}</td></tr>`;
+    }).join('');
+  }catch(e){document.getElementById('pktTable').innerHTML='<tr><td colspan="8" class="empty">Cannot reach API</td></tr>';}
+}
+async function loadStats(){
+  try{const r=await fetch(API+'/stats'),d=await r.json();document.getElementById('s-total').textContent=(d.total_packets||0).toLocaleString();document.getElementById('s-pps').textContent=d.latest_stats?.packets_per_second||0;rateHistory.push(d.latest_stats?.packets_per_second||0);rateHistory.shift();drawRate();}catch(e){}
+}
+const ws=new WebSocket(WS);
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.type==='stats'){const p=m.payload.packets_per_second||0;document.getElementById('s-pps').textContent=p;document.getElementById('s-total').textContent=(m.payload.total_packets||0).toLocaleString();rateHistory.push(p);rateHistory.shift();drawRate();}};
+loadStats();loadPackets();setInterval(loadStats,2000);setInterval(loadPackets,5000);window.addEventListener('resize',drawRate);
+</script>
+</body>
+</html>

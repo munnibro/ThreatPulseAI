@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — AI Engine Log</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@100;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#1a1610;--panel:#2a241a;--border:#4a3e28;
+    --accent:#c8b89a;--accent2:#3d3530;--accent3:#f5f0e8;
+    --text:#f5f0e8;--muted:#7a6a5a;
+    --glow:rgba(200,184,154,0.3);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(124,77,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(124,77,255,0.025) 1px,transparent 1px);background-size:50px 50px;animation:g 20s linear infinite;pointer-events:none;}
+  @keyframes g{0%{transform:translateY(0)}100%{transform:translateY(50px)}}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.97);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .back-btn{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);cursor:pointer;transition:color .2s;background:none;border:none;letter-spacing:.1em;}
+  .back-btn:hover{color:var(--accent);}
+  .page{max-width:1200px;margin:0 auto;padding:2rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2.2rem;font-weight:700;color:#fff;margin-bottom:.3rem;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);margin-bottom:2rem;}
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .sr{background:var(--panel);padding:1rem 1.2rem;position:relative;}
+  .sr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);}
+  .sr-val{font-family:'Share Tech Mono',monospace;font-size:1.3rem;color:var(--accent);display:block;line-height:1;}
+  .sr-label{font-family:'Rajdhani',sans-serif;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;}
+  /* Terminal */
+  .terminal-wrap{background:#000;border:1px solid var(--border);position:relative;}
+  .term-toolbar{display:flex;align-items:center;gap:.5rem;padding:.6rem 1rem;border-bottom:1px solid var(--border);background:rgba(124,77,255,.05);flex-wrap:wrap;}
+  .fbtn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.3rem .75rem;font-family:'Share Tech Mono',monospace;font-size:.56rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;border-radius:2px;}
+  .fbtn:hover,.fbtn.active{border-color:var(--accent);color:var(--accent);background:rgba(124,77,255,.08);}
+  .fbtn.ef.active{border-color:var(--accent2);color:var(--accent2);background:rgba(255,23,68,.06);}
+  .fbtn.wf.active{border-color:var(--warn);color:var(--warn);background:rgba(255,214,0,.05);}
+  .fbtn.of.active{border-color:var(--accent3);color:var(--accent3);background:rgba(0,230,118,.05);}
+  .terminal{padding:1rem;height:60vh;overflow-y:auto;font-family:'Share Tech Mono',monospace;font-size:.68rem;line-height:1.8;}
+  .terminal::-webkit-scrollbar{width:4px;}
+  .terminal::-webkit-scrollbar-thumb{background:var(--border);}
+  .tline{display:flex;gap:.6rem;padding:.08rem 0;border-bottom:1px solid rgba(255,255,255,.015);transition:background .1s;}
+  .tline:hover{background:rgba(124,77,255,.04);}
+  .tts{color:var(--muted);flex-shrink:0;min-width:65px;}
+  .ttag{flex-shrink:0;min-width:60px;}
+  .tmsg{flex:1;}
+  .tline.info .ttag,.tline.info .tmsg{color:var(--accent);}
+  .tline.warn .ttag,.tline.warn .tmsg{color:var(--warn);}
+  .tline.err  .ttag,.tline.err  .tmsg{color:var(--accent2);}
+  .tline.ok   .ttag,.tline.ok   .tmsg{color:var(--accent3);}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <button class="back-btn" onclick="history.back()">← BACK</button>
+</nav>
+<div class="page">
+  <div class="page-label">AI Intelligence Engine</div>
+  <div class="page-title">🧠 AI Engine Log</div>
+  <div class="page-sub" id="lastUpdate">Connecting to live stream...</div>
+  <div class="stats-row">
+    <div class="sr"><span class="sr-val" id="s-info">0</span><div class="sr-label">Info Events</div></div>
+    <div class="sr"><span class="sr-val" id="s-warn" style="color:var(--warn)">0</span><div class="sr-label">Warnings</div></div>
+    <div class="sr"><span class="sr-val" id="s-err" style="color:var(--accent2)">0</span><div class="sr-label">Errors / Threats</div></div>
+    <div class="sr"><span class="sr-val" id="s-ok" style="color:var(--accent3)">0</span><div class="sr-label">OK Events</div></div>
+  </div>
+  <div class="terminal-wrap">
+    <div class="term-toolbar">
+      <button class="fbtn active" onclick="setF('all',this)">ALL</button>
+      <button class="fbtn ef"  onclick="setF('err',this)">ERRORS</button>
+      <button class="fbtn wf" onclick="setF('warn',this)">WARNINGS</button>
+      <button class="fbtn of" onclick="setF('ok',this)">OK</button>
+      <button class="fbtn" onclick="setF('info',this)">INFO</button>
+      <button class="fbtn" onclick="clearLog()" style="margin-left:auto">CLEAR</button>
+      <button class="fbtn" id="pauseBtn" onclick="togglePause()">⏸ PAUSE</button>
+    </div>
+    <div class="terminal" id="term"></div>
+  </div>
+</div>
+<script>
+const WS=`ws://${location.hostname}:${location.port||8000}/ws`;
+let logs=[],cf='all',paused=false,counts={info:0,warn:0,err:0,ok:0};
+function setF(f,btn){cf=f;document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');render();}
+function togglePause(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'▶ RESUME':'⏸ PAUSE';}
+function clearLog(){logs=[];counts={info:0,warn:0,err:0,ok:0};render();updateC();}
+function updateC(){['info','warn','err','ok'].forEach(k=>document.getElementById('s-'+k).textContent=counts[k]);}
+function render(){
+  const fl=cf==='all'?logs:logs.filter(l=>l.cls===cf);
+  const term=document.getElementById('term');
+  term.innerHTML=fl.map(l=>`<div class="tline ${l.cls}"><span class="tts">${l.ts}</span><span class="ttag">[${l.tag}]</span><span class="tmsg">${l.msg}</span></div>`).join('');
+  if(!paused)term.scrollTop=term.scrollHeight;
+}
+function addLog(cls,tag,msg){
+  if(paused)return;
+  const ts=new Date().toTimeString().slice(0,8);
+  logs.push({cls,tag,msg,ts});if(logs.length>500)logs.shift();
+  counts[cls]=(counts[cls]||0)+1;updateC();render();
+  document.getElementById('lastUpdate').textContent='Last updated: '+ts;
+}
+const ws=new WebSocket(WS);
+ws.onopen=()=>addLog('ok','WS','Connected to ThreatPulse AI backend — streaming AI events');
+ws.onclose=()=>{addLog('err','WS','Connection lost — reloading...');setTimeout(()=>location.reload(),3000);};
+ws.onmessage=e=>{
+  const m=JSON.parse(e.data);
+  if(m.type==='threat'){const t=m.payload;const cls=t.severity==='CRITICAL'||t.severity==='HIGH'?'err':'warn';addLog(cls,'THREAT',`${t.threat_type} from ${t.src_ip||'?'} — score ${(t.threat_score||0).toFixed(2)} [${t.severity}]`);}
+  if(m.type==='stats'){const s=m.payload;addLog('info','STATS',`Packets: ${s.total_packets||0} | Threats: ${s.total_threats||0} | PPS: ${s.packets_per_second||0}`);if(s.CRITICAL>0)addLog('err','AI',`Critical threat count: ${s.CRITICAL}`);}
+  if(m.type==='history'){addLog('info','INIT','History loaded — '+((m.threats||[]).length)+' historical threats');(m.threats||[]).forEach(t=>{const cls=t.severity==='CRITICAL'||t.severity==='HIGH'?'err':'warn';addLog(cls,'HIST',`${t.threat_type} from ${t.src_ip||'?'} [${t.severity}]`);});}
+};
+</script>
+</body>
+</html>
