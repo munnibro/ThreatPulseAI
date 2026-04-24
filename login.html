@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#020408; --panel:#060d14; --border:#0a2a3a;
+    --accent:#00e5ff; --accent2:#ff2d55; --accent3:#39ff14;
+    --text:#c8dde8; --muted:#3a6070;
+    --glow:0 0 20px rgba(0,229,255,0.35);
+    --glow2:0 0 20px rgba(255,45,85,0.4);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'Exo 2',sans-serif;
+    min-height:100vh; display:flex;
+    align-items:center; justify-content:center;
+    overflow:hidden; cursor:crosshair;
+  }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);
+    pointer-events:none; z-index:9999;
+  }
+  .grid-bg {
+    position:fixed; inset:0;
+    background-image:linear-gradient(rgba(0,229,255,0.03) 1px,transparent 1px),
+                     linear-gradient(90deg,rgba(0,229,255,0.03) 1px,transparent 1px);
+    background-size:50px 50px;
+    animation:gridMove 25s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes gridMove { 0%{transform:translateY(0)} 100%{transform:translateY(50px)} }
+
+  .orb { position:fixed; border-radius:50%; pointer-events:none; filter:blur(80px); }
+  .orb-1 {
+    width:500px; height:500px;
+    background:radial-gradient(circle,rgba(0,229,255,0.07),transparent 70%);
+    top:-100px; right:-100px;
+    animation:orbFloat 8s ease-in-out infinite;
+  }
+  .orb-2 {
+    width:400px; height:400px;
+    background:radial-gradient(circle,rgba(255,45,85,0.06),transparent 70%);
+    bottom:-100px; left:-100px;
+    animation:orbFloat 10s ease-in-out infinite reverse;
+  }
+  @keyframes orbFloat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  /* ── PAGE LAYOUT ── */
+  .page {
+    display:grid; grid-template-columns:1fr 480px;
+    min-height:100vh; width:100%;
+    position:relative; z-index:1;
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    display:flex; flex-direction:column;
+    justify-content:center; padding:4rem 5rem;
+    border-right:1px solid var(--border);
+    position:relative; overflow:hidden;
+  }
+  .left-panel::after {
+    content:''; position:absolute;
+    top:0; right:0; bottom:0; width:1px;
+    background:linear-gradient(to bottom,transparent,var(--accent),transparent);
+    opacity:.4;
+  }
+  .brand { display:flex; align-items:center; gap:1rem; margin-bottom:3rem; }
+  .brand-icon {
+    width:48px; height:48px;
+    border:2px solid var(--accent); border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem; color:var(--accent);
+    box-shadow:var(--glow);
+    animation:iconPulse 3s ease-in-out infinite;
+    flex-shrink:0;
+  }
+  @keyframes iconPulse {
+    0%,100%{box-shadow:0 0 15px rgba(0,229,255,.3)}
+    50%{box-shadow:0 0 35px rgba(0,229,255,.7)}
+  }
+  .brand-name {
+    font-family:'Share Tech Mono',monospace;
+    font-size:1.8rem; color:var(--accent);
+    letter-spacing:.25em; text-shadow:var(--glow);
+  }
+  .brand-tagline {
+    font-family:'Share Tech Mono',monospace;
+    font-size:.6rem; color:var(--muted);
+    letter-spacing:.2em; margin-top:.2rem;
+  }
+  .left-headline {
+    font-family:'Rajdhani',sans-serif;
+    font-size:clamp(2.5rem,4vw,4rem);
+    font-weight:700; line-height:1; color:#fff;
+    margin-bottom:1.5rem;
+  }
+  .left-headline span {
+    display:block; color:var(--accent);
+    font-weight:300; font-size:.55em;
+    letter-spacing:.1em; margin-bottom:.4rem;
+  }
+  .left-desc {
+    font-size:.95rem; color:var(--muted);
+    font-weight:300; line-height:1.8;
+    max-width:420px; margin-bottom:3rem;
+  }
+  .live-stats {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:1px; background:var(--border);
+    border:1px solid var(--border); max-width:380px;
+  }
+  .ls-item { background:var(--panel); padding:1rem 1.2rem; }
+  .ls-num {
+    font-family:'Share Tech Mono',monospace;
+    font-size:1.4rem; color:var(--accent);
+    text-shadow:var(--glow); display:block;
+  }
+  .ls-label {
+    font-family:'Rajdhani',sans-serif;
+    font-size:.68rem; color:var(--muted);
+    letter-spacing:.12em; text-transform:uppercase; margin-top:.2rem;
+  }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    background:rgba(4,10,18,0.95);
+    display:flex; flex-direction:column;
+    justify-content:center; padding:3rem 2.5rem;
+    border-left:1px solid var(--border); position:relative;
+  }
+  .right-panel::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,transparent,var(--accent),transparent);
+    opacity:.6;
+  }
+
+  .form-header { margin-bottom:2rem; }
+  .form-title {
+    font-family:'Rajdhani',sans-serif;
+    font-size:1.8rem; font-weight:700;
+    color:#fff; letter-spacing:.05em;
+  }
+  .form-subtitle {
+    font-family:'Share Tech Mono',monospace;
+    font-size:.62rem; color:var(--muted);
+    letter-spacing:.15em; margin-top:.4rem;
+  }
+
+  /* Provider badges */
+  .provider-row { display:flex; gap:.5rem; margin-bottom:1.3rem; flex-wrap:wrap; }
+  .provider-badge {
+    display:flex; align-items:center; gap:.35rem;
+    padding:.28rem .6rem; border:1px solid var(--border);
+    font-family:'Share Tech Mono',monospace;
+    font-size:.54rem; color:var(--muted); border-radius:2px;
+    transition:all .3s;
+  }
+  .provider-badge.active {
+    border-color:rgba(0,229,255,.3); color:var(--accent);
+    background:rgba(0,229,255,.05);
+  }
+  .provider-dot {
+    width:5px; height:5px; border-radius:50%;
+    background:var(--accent3); box-shadow:0 0 5px var(--accent3);
+    animation:dotPulse 2s ease-in-out infinite;
+  }
+  @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  /* OAuth buttons */
+  .oauth-buttons { display:flex; flex-direction:column; gap:.65rem; margin-bottom:1.3rem; }
+  .btn-oauth {
+    width:100%; display:flex; align-items:center; gap:.85rem;
+    border:none; padding:.75rem 1.2rem;
+    font-family:'Rajdhani',sans-serif; font-weight:700;
+    font-size:.88rem; letter-spacing:.06em;
+    cursor:pointer; transition:all .2s; border-radius:3px;
+    position:relative; overflow:hidden;
+  }
+  .btn-oauth:hover { transform:translateY(-1px); }
+  .btn-oauth:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+  .btn-google { background:#fff; color:#1f1f1f; }
+  .btn-google:hover { box-shadow:0 6px 25px rgba(255,255,255,.15); }
+  .btn-github { background:#24292f; color:#fff; border:1px solid #444d56; }
+  .btn-github:hover { background:#2d333b; box-shadow:0 6px 25px rgba(0,0,0,.3); }
+  .oauth-icon { width:20px; height:20px; flex-shrink:0; }
+  .oauth-label { flex:1; text-align:center; }
+
+  /* Divider */
+  .divider { display:flex; align-items:center; gap:.8rem; margin-bottom:1.2rem; }
+  .divider-line { flex:1; height:1px; background:var(--border); }
+  .divider-text {
+    font-family:'Share Tech Mono',monospace;
+    font-size:.56rem; color:var(--muted);
+    letter-spacing:.1em; white-space:nowrap;
+  }
+
+  /* Inputs */
+  .input-group { margin-bottom:1.1rem; }
+  .input-label {
+    display:block; font-family:'Share Tech Mono',monospace;
+    font-size:.58rem; color:var(--muted);
+    letter-spacing:.18em; text-transform:uppercase; margin-bottom:.45rem;
+  }
+  .input-wrap { position:relative; display:flex; align-items:center; }
+  .input-icon {
+    position:absolute; left:.85rem;
+    font-size:.82rem; color:var(--muted);
+    transition:color .2s; z-index:1; pointer-events:none;
+  }
+  input[type="email"], input[type="password"] {
+    width:100%; background:rgba(0,0,0,.4);
+    border:1px solid var(--border); color:var(--text);
+    font-family:'Exo 2',sans-serif; font-size:.88rem;
+    padding:.72rem .85rem .72rem 2.4rem;
+    outline:none; transition:border-color .2s,box-shadow .2s; border-radius:2px;
+  }
+  input:focus {
+    border-color:var(--accent);
+    box-shadow:var(--glow),inset 0 0 20px rgba(0,229,255,.03);
+  }
+  .input-wrap:focus-within .input-icon { color:var(--accent); }
+  .pw-toggle {
+    position:absolute; right:.85rem;
+    background:none; border:none; color:var(--muted);
+    cursor:pointer; font-size:.82rem; transition:color .2s; z-index:1;
+  }
+  .pw-toggle:hover { color:var(--accent); }
+
+  /* Remember row */
+  .remember-row {
+    display:flex; align-items:center;
+    justify-content:space-between; margin-bottom:1.4rem;
+  }
+  .checkbox-wrap { display:flex; align-items:center; gap:.55rem; cursor:pointer; }
+  .checkbox-wrap input[type="checkbox"] {
+    width:15px; height:15px; accent-color:var(--accent);
+    cursor:pointer; padding:0; margin:0;
+  }
+  .checkbox-label {
+    font-family:'Rajdhani',sans-serif;
+    font-size:.8rem; color:var(--muted); cursor:pointer;
+  }
+  .forgot-link {
+    font-family:'Share Tech Mono',monospace;
+    font-size:.58rem; color:var(--accent);
+    text-decoration:none; letter-spacing:.1em; transition:text-shadow .2s;
+  }
+  .forgot-link:hover { text-shadow:var(--glow); }
+
+  /* Submit button */
+  .btn-submit {
+    width:100%; background:var(--accent); color:var(--bg);
+    border:none; padding:.82rem;
+    font-family:'Rajdhani',sans-serif; font-weight:700;
+    font-size:.92rem; letter-spacing:.2em; text-transform:uppercase;
+    cursor:pointer;
+    clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+    transition:all .2s; box-shadow:var(--glow);
+    position:relative; overflow:hidden; margin-bottom:1.2rem;
+  }
+  .btn-submit::before {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+    transform:translateX(-100%); transition:transform .4s;
+  }
+  .btn-submit:hover::before { transform:translateX(100%); }
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 0 40px rgba(0,229,255,.5); }
+  .btn-submit:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+  .switch-row {
+    text-align:center; font-family:'Rajdhani',sans-serif;
+    font-size:.85rem; color:var(--muted);
+  }
+  .switch-row a {
+    color:var(--accent); text-decoration:none;
+    font-weight:600; transition:text-shadow .2s;
+  }
+  .switch-row a:hover { text-shadow:var(--glow); }
+
+  /* Message box */
+  .msg-box {
+    padding:.65rem .9rem; font-family:'Share Tech Mono',monospace;
+    font-size:.63rem; letter-spacing:.08em; border-radius:2px;
+    margin-bottom:1rem; display:none; border-left:3px solid;
+  }
+  .msg-box.error   { background:rgba(255,45,85,.1);  border-color:var(--accent2); color:var(--accent2); display:block; }
+  .msg-box.success { background:rgba(57,255,20,.1);  border-color:var(--accent3); color:var(--accent3); display:block; }
+
+  .spinner {
+    display:inline-block; width:13px; height:13px;
+    border:2px solid rgba(0,0,0,.25); border-top-color:var(--bg);
+    border-radius:50%; animation:spin .7s linear infinite;
+    margin-right:.4rem; vertical-align:middle;
+  }
+  @keyframes spin { to{transform:rotate(360deg)} }
+
+  /* Fade-in animations */
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .right-panel > * { animation:fadeUp .5s ease forwards; opacity:0; }
+  .right-panel > *:nth-child(1){animation-delay:.1s}
+  .right-panel > *:nth-child(2){animation-delay:.18s}
+  .right-panel > *:nth-child(3){animation-delay:.26s}
+  .right-panel > *:nth-child(4){animation-delay:.32s}
+  .right-panel > *:nth-child(5){animation-delay:.38s}
+  .right-panel > *:nth-child(6){animation-delay:.44s}
+  .right-panel > *:nth-child(7){animation-delay:.5s}
+  .right-panel > *:nth-child(8){animation-delay:.55s}
+
+  @media(max-width:860px){
+    .page{grid-template-columns:1fr}
+    .left-panel{display:none}
+    .right-panel{padding:2rem 1.5rem;border-left:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">◈</div>
+      <div>
+        <div class="brand-name">ThreatPulse AI</div>
+        <div class="brand-tagline">AI-POWERED THREAT DETECTION</div>
+      </div>
+    </div>
+
+    <div class="left-headline">
+      <span>PROTECTING YOUR</span>
+      NETWORK<br>IN REAL TIME
+    </div>
+
+    <p class="left-desc">
+      AI-powered threat detection that monitors every packet,
+      identifies attacks in milliseconds, and keeps your
+      infrastructure secure — 24/7.
+    </p>
+
+    <div class="live-stats">
+      <div class="ls-item">
+        <span class="ls-num" id="stat1">0</span>
+        <div class="ls-label">Threats Blocked</div>
+      </div>
+      <div class="ls-item">
+        <span class="ls-num">0.3ms</span>
+        <div class="ls-label">Detection Time</div>
+      </div>
+      <div class="ls-item">
+        <span class="ls-num">99.97%</span>
+        <div class="ls-label">Accuracy</div>
+      </div>
+      <div class="ls-item">
+        <span class="ls-num" id="stat2">0</span>
+        <div class="ls-label">Packets / sec</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="form-header">
+      <div class="form-title">Welcome Back</div>
+      <div class="form-subtitle">SIGN IN TO YOUR ThreatPulse AI ACCOUNT</div>
+    </div>
+
+    <div class="provider-row">
+      <div class="provider-badge active">
+        <span class="provider-dot"></span> EMAIL
+      </div>
+      <div class="provider-badge" id="googleBadge">&#9711; GOOGLE</div>
+      <div class="provider-badge" id="githubBadge">&#9711; GITHUB</div>
+    </div>
+
+    <div class="msg-box" id="msgBox"></div>
+
+    <div class="oauth-buttons">
+      <button class="btn-oauth btn-google" onclick="oauthLogin('google')" id="googleBtn">
+        <svg class="oauth-icon" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        <span class="oauth-label">Continue with Google</span>
+      </button>
+      <button class="btn-oauth btn-github" onclick="oauthLogin('github')" id="githubBtn">
+        <svg class="oauth-icon" viewBox="0 0 24 24" fill="white">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        <span class="oauth-label">Continue with GitHub</span>
+      </button>
+    </div>
+
+    <div class="divider">
+      <div class="divider-line"></div>
+      <span class="divider-text">OR SIGN IN WITH EMAIL</span>
+      <div class="divider-line"></div>
+    </div>
+
+    <form id="loginForm" onsubmit="handleLogin(event)">
+      <div class="input-group">
+        <label class="input-label" for="email">Email Address</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#9993;</span>
+          <input type="email" id="email" placeholder="analyst@threatpulse.io" required autocomplete="email">
+        </div>
+      </div>
+      <div class="input-group">
+        <label class="input-label" for="password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">&#128274;</span>
+          <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+          <button type="button" class="pw-toggle" onclick="togglePw()">&#128065;</button>
+        </div>
+      </div>
+      <div class="remember-row">
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="rememberMe">
+          <span class="checkbox-label">Remember me for 7 days</span>
+        </label>
+        <a href="forgot-password.html" class="forgot-link">FORGOT PASSWORD?</a>
+      </div>
+      <button type="submit" class="btn-submit" id="loginBtn">
+        SIGN IN TO ThreatPulse AI
+      </button>
+    </form>
+
+    <div class="switch-row">
+      Don't have an account? <a href="signup.html">Create one here &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<script>// Already logged in?
+  (async () => {
+    try {
+      const r = await fetch('/auth/check');
+      const d = await r.json();
+      if (d.authenticated) window.location.href = '/dashboard.html';
+    } catch(e) {}
+  })();
+
+  // OAuth error handling
+  const urlParams  = new URLSearchParams(window.location.search);
+  const oauthError = urlParams.get('error');
+  if (oauthError) {
+    const msgs = {
+      google_denied:         '✗ Google sign-in was cancelled.',
+      github_denied:         '✗ GitHub sign-in was cancelled.',
+      invalid_state:         '✗ Security check failed. Please try again.',
+      token_failed:          '✗ Could not get token. Please try again.',
+      no_email:              '✗ Could not get your email from the provider.',
+      oauth_failed:          '✗ Sign-in failed. Please try again.',
+      github_not_configured: '✗ GitHub OAuth not configured in .env',
+      not_configured:        '✗ Google OAuth not configured in .env',
+    };
+    const box = document.getElementById('msgBox');
+    box.className = 'msg-box error';
+    box.textContent = msgs[oauthError] || '✗ Sign-in error. Please try again.';
+  }
+
+  // Check which providers are configured
+  async function checkProviders() {
+    try {
+      const r = await fetch('/auth/providers');
+      const d = await r.json();
+      if (d.google) {
+        document.getElementById('googleBadge').className = 'provider-badge active';
+        document.getElementById('googleBadge').innerHTML = '<span class="provider-dot"></span> GOOGLE';
+      }
+      if (d.github) {
+        document.getElementById('githubBadge').className = 'provider-badge active';
+        document.getElementById('githubBadge').innerHTML = '<span class="provider-dot"></span> GITHUB';
+      }
+    } catch(e) {}
+  }
+  checkProviders();
+
+  // Live stats
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/stats');
+      const d = await r.json();
+      document.getElementById('stat1').textContent = (d.total_threats||0).toLocaleString();
+      document.getElementById('stat2').textContent = (d.latest_stats?.packets_per_second||0);
+    } catch(e) {}
+  }
+  loadStats();
+  setInterval(loadStats, 5000);
+
+  // OAuth login
+  function oauthLogin(provider) {
+    const btn  = document.getElementById(provider+'Btn');
+    btn.disabled = true;
+    const name = provider.charAt(0).toUpperCase() + provider.slice(1);
+    btn.innerHTML = `<span class="spinner"></span><span class="oauth-label">Connecting to ${name}...</span>`;
+    window.location.href = `/auth/${provider}/login`;
+  }
+
+  // Email login
+  async function handleLogin(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const msg = document.getElementById('msgBox');
+    msg.className = 'msg-box';
+    btn.disabled  = true;
+    btn.innerHTML = '<span class="spinner"></span>AUTHENTICATING...';
+
+    try {
+      const res = await fetch('/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email:       document.getElementById('email').value.trim(),
+          password:    document.getElementById('password').value,
+          remember_me: document.getElementById('rememberMe').checked,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msg.className = 'msg-box success';
+        msg.textContent = `✓ Welcome back, ${data.username}! Redirecting...`;
+        setTimeout(() => window.location.href = '/dashboard.html', 900);
+      } else {
+        throw new Error(data.detail || 'Login failed');
+      }
+    } catch(err) {
+      msg.className = 'msg-box error';
+      msg.textContent = '✗ ' + (err.message || 'Invalid email or password');
+      btn.disabled = false;
+      btn.innerHTML = 'SIGN IN TO ThreatPulse AI';
+    }
+  }
+
+  function togglePw() {
+    const input = document.getElementById('password');
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    document.querySelector('.pw-toggle').textContent = input.type === 'password' ? '👁' : '🙈';
+  }
+</script>
+</body>
+</html>

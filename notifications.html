@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatPulse AI — Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Exo+2:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#020408;--panel:#060d14;--border:#0a2a3a;--accent:#00e5ff;--accent2:#ff2d55;--accent3:#39ff14;--text:#c8dde8;--muted:#3a6070;--glow:0 0 20px rgba(0,229,255,0.3);--glow2:0 0 20px rgba(255,45,85,0.4);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.07) 2px,rgba(0,0,0,0.07) 4px);pointer-events:none;z-index:9999;}
+  .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:60px 60px;animation:gridShift 20s linear infinite;pointer-events:none;}
+  @keyframes gridShift{0%{transform:translateY(0)}100%{transform:translateY(60px)}}
+
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:56px;background:rgba(2,4,8,0.95);border-bottom:1px solid var(--border);backdrop-filter:blur(10px);}
+  .logo{font-family:'Share Tech Mono',monospace;font-size:1.1rem;color:var(--accent);letter-spacing:.2em;text-shadow:var(--glow);display:flex;align-items:center;gap:.6rem;text-decoration:none;cursor:pointer;}
+  .logo-icon{width:26px;height:26px;border:2px solid var(--accent);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--accent);}
+  .nav-back{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted);letter-spacing:.12em;text-decoration:none;display:flex;align-items:center;gap:.5rem;transition:color .2s;cursor:pointer;}
+  .nav-back:hover{color:var(--accent);}
+  .nav-right{display:flex;align-items:center;gap:1rem;}
+  .live-dot{display:flex;align-items:center;gap:.4rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--accent3);}
+  .live-dot span{width:6px;height:6px;border-radius:50%;background:var(--accent3);box-shadow:0 0 8px var(--accent3);animation:dotGlow 1.5s ease-in-out infinite;}
+  @keyframes dotGlow{0%,100%{box-shadow:0 0 4px var(--accent3)}50%{box-shadow:0 0 14px var(--accent3)}}
+
+  .page{max-width:1000px;margin:0 auto;padding:2.5rem 2rem;position:relative;z-index:1;}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem;flex-wrap:wrap;gap:1rem;}
+  .page-label{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--accent);letter-spacing:.25em;text-transform:uppercase;display:flex;align-items:center;gap:.7rem;margin-bottom:.5rem;}
+  .page-label::before{content:'';width:25px;height:1px;background:var(--accent);}
+  .page-title{font-family:'Rajdhani',sans-serif;font-size:2rem;font-weight:700;color:#fff;}
+
+  /* FILTER TABS */
+  .filter-tabs{display:flex;gap:0;border:1px solid var(--border);overflow:hidden;flex-wrap:wrap;}
+  .tab{background:transparent;border:none;border-right:1px solid var(--border);padding:.55rem 1.2rem;font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.82rem;letter-spacing:.08em;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;}
+  .tab:last-child{border-right:none;}
+  .tab:hover{color:var(--accent);background:rgba(0,229,255,.04);}
+  .tab.active{background:rgba(0,229,255,.08);color:var(--accent);border-bottom:2px solid var(--accent);}
+  .tab .tab-count{font-family:'Share Tech Mono',monospace;font-size:.58rem;padding:.1rem .4rem;border-radius:2px;margin-left:.4rem;background:rgba(255,255,255,.06);}
+  .tab.active .tab-count{background:rgba(0,229,255,.15);color:var(--accent);}
+
+  /* STATS ROW */
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.5rem;}
+  .stat-box{background:var(--panel);padding:.9rem 1.1rem;}
+  .stat-num{font-family:'Share Tech Mono',monospace;font-size:1.5rem;display:block;line-height:1;}
+  .stat-label{font-family:'Rajdhani',sans-serif;font-size:.65rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:.3rem;}
+
+  /* ACTION BUTTONS */
+  .actions-row{display:flex;gap:.7rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .btn-sm{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.45rem 1rem;font-family:'Rajdhani',sans-serif;font-weight:500;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-sm.danger:hover{border-color:var(--accent2);color:var(--accent2);}
+
+  /* NOTIFICATION ITEMS */
+  .notif-list{display:flex;flex-direction:column;gap:.6rem;}
+
+  .notif-item{display:grid;grid-template-columns:auto 1fr auto;gap:1rem;align-items:start;padding:1rem 1.2rem;background:var(--panel);border:1px solid var(--border);border-left:3px solid;transition:background .2s;position:relative;cursor:pointer;}
+  .notif-item:hover{background:rgba(6,20,30,.95);}
+  .notif-item.unread{background:rgba(6,16,26,.98);}
+  .notif-item.unread::after{content:'';position:absolute;top:1rem;right:1rem;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:var(--glow);}
+  .notif-item.CRITICAL{border-left-color:var(--accent2);}
+  .notif-item.HIGH{border-left-color:#ff6b35;}
+  .notif-item.MEDIUM{border-left-color:#ffd700;}
+  .notif-item.LOW{border-left-color:var(--accent3);}
+
+  .notif-sev-icon{width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;border-radius:2px;}
+  .CRITICAL .notif-sev-icon{background:rgba(255,45,85,.08);border-color:rgba(255,45,85,.3);}
+  .HIGH .notif-sev-icon{background:rgba(255,107,53,.08);border-color:rgba(255,107,53,.3);}
+  .MEDIUM .notif-sev-icon{background:rgba(255,215,0,.06);border-color:rgba(255,215,0,.25);}
+  .LOW .notif-sev-icon{background:rgba(57,255,20,.06);border-color:rgba(57,255,20,.2);}
+
+  .notif-body{}
+  .notif-header{display:flex;align-items:center;gap:.7rem;margin-bottom:.35rem;flex-wrap:wrap;}
+  .notif-type{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:.95rem;color:#fff;letter-spacing:.04em;}
+  .sev-pill{font-family:'Share Tech Mono',monospace;font-size:.52rem;padding:.12rem .45rem;border-radius:2px;font-weight:bold;}
+  .CRITICAL .sev-pill{background:rgba(255,45,85,.2);color:var(--accent2);}
+  .HIGH .sev-pill{background:rgba(255,107,53,.2);color:#ff6b35;}
+  .MEDIUM .sev-pill{background:rgba(255,215,0,.15);color:#ffd700;}
+  .LOW .sev-pill{background:rgba(57,255,20,.15);color:var(--accent3);}
+
+  .notif-desc{font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:.5rem;}
+  .notif-meta{display:flex;gap:1.2rem;flex-wrap:wrap;}
+  .meta-chip{display:flex;align-items:center;gap:.35rem;font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);}
+  .meta-chip span{color:var(--text);}
+
+  .notif-time{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted);text-align:right;white-space:nowrap;padding-top:.15rem;}
+
+  /* Resolved badge */
+  .resolved-badge{font-family:'Share Tech Mono',monospace;font-size:.55rem;padding:.12rem .45rem;background:rgba(57,255,20,.1);border:1px solid rgba(57,255,20,.25);color:var(--accent3);border-radius:2px;margin-left:.4rem;}
+
+  /* Empty state */
+  .empty-state{text-align:center;padding:4rem 2rem;background:var(--panel);border:1px solid var(--border);}
+  .empty-icon{font-size:2.5rem;margin-bottom:1rem;opacity:.4;}
+  .empty-title{font-family:'Rajdhani',sans-serif;font-size:1.1rem;color:var(--muted);margin-bottom:.5rem;}
+  .empty-desc{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);opacity:.6;}
+
+  /* Pagination */
+  .pagination{display:flex;justify-content:center;gap:.5rem;margin-top:1.5rem;}
+  .page-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:.4rem .85rem;font-family:'Share Tech Mono',monospace;font-size:.65rem;cursor:pointer;transition:all .2s;}
+  .page-btn:hover,.page-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.05);}
+
+  /* WS indicator */
+  .ws-bar{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.15);padding:.5rem 1rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:.62rem;}
+  .ws-bar-left{color:var(--accent3);display:flex;align-items:center;gap:.5rem;}
+  .ws-bar-right{color:var(--muted);}
+
+  @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  .notif-item{animation:slideIn .3s ease;}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .page>*{animation:fadeUp .4s ease forwards;opacity:0;}
+  .page>*:nth-child(1){animation-delay:.05s}.page>*:nth-child(2){animation-delay:.1s}.page>*:nth-child(3){animation-delay:.15s}.page>*:nth-child(4){animation-delay:.2s}.page>*:nth-child(5){animation-delay:.25s}.page>*:nth-child(6){animation-delay:.3s}
+
+  @media(max-width:600px){.stats-row{grid-template-columns:1fr 1fr}.notif-item{grid-template-columns:auto 1fr}}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<nav>
+  <a class="logo" href="/dashboard.html"><div class="logo-icon">◈</div>ThreatPulse AI</a>
+  <div class="nav-right">
+    <div class="live-dot"><span></span>LIVE</div>
+    <a class="nav-back" href="/dashboard.html">← Dashboard</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-label">Alerts</div>
+      <div class="page-title">Notifications</div>
+    </div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="tab active" onclick="setFilter('all', this)">All <span class="tab-count" id="cnt-all">0</span></button>
+      <button class="tab" onclick="setFilter('CRITICAL', this)">Critical <span class="tab-count" id="cnt-CRITICAL">0</span></button>
+      <button class="tab" onclick="setFilter('HIGH', this)">High <span class="tab-count" id="cnt-HIGH">0</span></button>
+      <button class="tab" onclick="setFilter('MEDIUM', this)">Medium <span class="tab-count" id="cnt-MEDIUM">0</span></button>
+      <button class="tab" onclick="setFilter('LOW', this)">Low <span class="tab-count" id="cnt-LOW">0</span></button>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-num" style="color:var(--accent2)" id="s-critical">0</span>
+      <div class="stat-label">Critical</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" style="color:#ff6b35" id="s-high">0</span>
+      <div class="stat-label">High</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" style="color:#ffd700" id="s-medium">0</span>
+      <div class="stat-label">Medium</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num" style="color:var(--accent3)" id="s-low">0</span>
+      <div class="stat-label">Low</div>
+    </div>
+  </div>
+
+  <!-- WS STATUS -->
+  <div class="ws-bar">
+    <div class="ws-bar-left"><span id="wsIcon">●</span> <span id="wsStatus">Connecting to live feed...</span></div>
+    <div class="ws-bar-right" id="wsLastUpdate">Last update: —</div>
+  </div>
+
+  <!-- ACTION BUTTONS -->
+  <div class="actions-row">
+    <button class="btn-sm" onclick="loadThreats()">↻ Refresh</button>
+    <button class="btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+    <button class="btn-sm danger" onclick="clearAll()">✕ Clear All</button>
+  </div>
+
+  <!-- NOTIFICATION LIST -->
+  <div class="notif-list" id="notifList">
+    <div class="empty-state">
+      <div class="empty-icon">??️</div>
+      <div class="empty-title">Loading threats...</div>
+      <div class="empty-desc">FETCHING FROM ThreatPulse AI DATABASE</div>
+    </div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+
+</div>
+
+<script>
+const ICONS = { CRITICAL:'??', HIGH:'⚠️', MEDIUM:'??', LOW:'ℹ️' };
+let allThreats   = [];
+let currentFilter = 'all';
+let readIds       = new Set(JSON.parse(localStorage.getItem('readThreatIds') || '[]'));
+let currentPage   = 1;
+const PAGE_SIZE   = 15;
+
+// ── WebSocket for live updates ────────────────────────────
+const PORT = window.location.port || '8000';
+const HOST = window.location.hostname || '127.0.0.1';
+const ws = new WebSocket("ws://localhost:8765");
+
+ws.onopen = () => {
+  document.getElementById('wsIcon').style.color   = 'var(--accent3)';
+  document.getElementById('wsStatus').textContent = 'Live — receiving real-time threat updates';
+};
+
+ws.onclose = () => {
+  document.getElementById('wsIcon').style.color   = 'var(--accent2)';
+  document.getElementById('wsStatus').textContent = 'Disconnected — showing cached data';
+};
+
+ws.onmessage = (e) => {
+  const msg = JSON.parse(e.data);
+  const now = new Date().toTimeString().slice(0,8);
+  document.getElementById('wsLastUpdate').textContent = 'Last update: ' + now;
+
+  if (msg.type === 'threat') {
+    allThreats.unshift(msg.payload);
+    updateCounts();
+    renderList();
+  }
+  if (msg.type === 'history' && msg.threats) {
+    msg.threats.forEach(t => {
+      if (!allThreats.find(x => x.id === t.id)) allThreats.push(t);
+    });
+    updateCounts();
+    renderList();
+  }
+};
+
+// ── Load threats from REST API ────────────────────────────
+async function loadThreats() {
+  try {
+    const r = await fetch('/api/threats?limit=200');
+    const threats = await r.json();
+    allThreats = threats;
+    updateCounts();
+    renderList();
+  } catch(err) {
+    document.getElementById('notifList').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Cannot load threats</div>
+        <div class="empty-desc">MAKE SURE API.PY IS RUNNING</div>
+      </div>`;
+  }
+}
+
+// ── Update tab counts & stat boxes ───────────────────────
+function updateCounts() {
+  const counts = { CRITICAL:0, HIGH:0, MEDIUM:0, LOW:0 };
+  allThreats.forEach(t => { if (counts[t.severity] !== undefined) counts[t.severity]++; });
+
+  document.getElementById('cnt-all').textContent      = allThreats.length;
+  document.getElementById('cnt-CRITICAL').textContent = counts.CRITICAL;
+  document.getElementById('cnt-HIGH').textContent     = counts.HIGH;
+  document.getElementById('cnt-MEDIUM').textContent   = counts.MEDIUM;
+  document.getElementById('cnt-LOW').textContent      = counts.LOW;
+
+  document.getElementById('s-critical').textContent = counts.CRITICAL;
+  document.getElementById('s-high').textContent     = counts.HIGH;
+  document.getElementById('s-medium').textContent   = counts.MEDIUM;
+  document.getElementById('s-low').textContent      = counts.LOW;
+}
+
+// ── Render notification list ──────────────────────────────
+function renderList() {
+  const filtered = currentFilter === 'all'
+    ? allThreats
+    : allThreats.filter(t => t.severity === currentFilter);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+
+  const start  = (currentPage - 1) * PAGE_SIZE;
+  const paged  = filtered.slice(start, start + PAGE_SIZE);
+  const list   = document.getElementById('notifList');
+
+  if (!paged.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">??️</div>
+        <div class="empty-title">No threats found</div>
+        <div class="empty-desc">${currentFilter === 'all' ? 'YOUR NETWORK IS CLEAN' : 'NO ' + currentFilter + ' THREATS DETECTED'}</div>
+      </div>`;
+    document.getElementById('pagination').innerHTML = '';
+    return;
+  }
+
+  list.innerHTML = paged.map(t => {
+    const isUnread = !readIds.has(String(t.id));
+    const time     = formatTime(t.timestamp);
+    const icon     = ICONS[t.severity] || '??';
+    return `
+      <div class="notif-item ${t.severity} ${isUnread ? 'unread' : ''}" onclick="markRead(${t.id})">
+        <div class="notif-sev-icon">${icon}</div>
+        <div class="notif-body">
+          <div class="notif-header">
+            <span class="notif-type">${t.threat_type}</span>
+            <span class="sev-pill">${t.severity}</span>
+            ${t.resolved ? '<span class="resolved-badge">✓ RESOLVED</span>' : ''}
+          </div>
+          <div class="notif-desc">${t.description || 'Threat detected on your network'}</div>
+          <div class="notif-meta">
+            ${t.src_ip ? `<div class="meta-chip">SRC <span>${t.src_ip}</span></div>` : ''}
+            ${t.dst_ip ? `<div class="meta-chip">DST <span>${t.dst_ip}</span></div>` : ''}
+            ${t.protocol ? `<div class="meta-chip">PROTO <span>${t.protocol}</span></div>` : ''}
+            ${t.threat_score ? `<div class="meta-chip">SCORE <span>${parseFloat(t.threat_score).toFixed(2)}</span></div>` : ''}
+          </div>
+        </div>
+        <div class="notif-time">${time}</div>
+      </div>`;
+  }).join('');
+
+  // Pagination
+  const pg = document.getElementById('pagination');
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
+  let btns = '';
+  for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+    btns += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  pg.innerHTML = `
+    <button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>←</button>
+    ${btns}
+    <button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>→</button>`;
+}
+
+function goPage(p) {
+  const filtered = currentFilter === 'all' ? allThreats : allThreats.filter(t => t.severity === currentFilter);
+  const total = Math.ceil(filtered.length / PAGE_SIZE);
+  currentPage = Math.max(1, Math.min(p, total));
+  renderList();
+  window.scrollTo(0, 0);
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  currentPage   = 1;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function markRead(id) {
+  readIds.add(String(id));
+  localStorage.setItem('readThreatIds', JSON.stringify([...readIds]));
+  renderList();
+}
+
+function markAllRead() {
+  allThreats.forEach(t => readIds.add(String(t.id)));
+  localStorage.setItem('readThreatIds', JSON.stringify([...readIds]));
+  renderList();
+}
+
+function clearAll() {
+  if (!confirm('Clear all notifications from view? (Data stays in database)')) return;
+  allThreats = [];
+  updateCounts();
+  renderList();
+}
+
+function formatTime(iso) {
+  if (!iso) return '—';
+  try {
+    const d = new Date(iso);
+    const today = new Date();
+    if (d.toDateString() === today.toDateString()) return d.toTimeString().slice(0,8);
+    return d.toLocaleDateString('en-GB', {day:'numeric',month:'short'}) + ' ' + d.toTimeString().slice(0,5);
+  } catch(e) { return iso.slice(11,19) || iso; }
+}
+
+// ── Init ──────────────────────────────────────────────────
+loadThreats();
+setInterval(loadThreats, 15000);  // refresh every 15 seconds
+</script>
+</body>
+</html>
